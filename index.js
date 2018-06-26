@@ -1,5 +1,9 @@
-import { h } from 'hyperapp'
-import picostyle from "picostyle"
+import {
+    h
+} from 'hyperapp'
+import picostyle, {
+    keyframes
+} from "picostyle"
 const style = picostyle(h);
 
 export class Komponent {
@@ -7,9 +11,16 @@ export class Komponent {
         o.style = o.style || function () {
             return {};
         };
-        if (o)
-            return style(o.jsx)(o.style);
-        else
+        if (o) {
+            const component = style(o.jsx)(o.style)
+            if (o.script) {
+                component.onCreated = o.script();
+                return component
+            } else {
+                return style(o.jsx)(o.style)
+            }
+        } else {
             return this;
+        }
     }
 }
