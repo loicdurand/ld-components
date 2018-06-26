@@ -1,6 +1,6 @@
 {
   "name": "ld-components",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "a small web-components library, intended to be used with \"hyperapp\" micro-framework and \"picostyle\" css-in-js lib",
   "main": "index.js",
   "scripts": {
