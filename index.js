@@ -2,7 +2,7 @@ import { h } from 'hyperapp'
 import picostyle from "picostyle"
 const style = picostyle(h);
 
-export class Komponent {
+export class Component {
     constructor(o) {
         o.style = o.style || function () {
             return {};
