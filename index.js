@@ -1,4 +1,4 @@
-import { h } from 'hyperapp';
+import { h, app } from 'hyperapp';
 import picostyle from "picostyle";
 
 const // 
@@ -10,3 +10,4 @@ const //
 
 export const style = new Proxy(css, smartify);
 export default h;
+export default app;
