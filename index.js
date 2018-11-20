@@ -1,15 +1,12 @@
-import { h } from 'hyperapp'
-import picostyle from "picostyle"
-const style = picostyle(h);
+import { h } from 'hyperapp';
+import picostyle from "picostyle";
 
-export class Component {
-    constructor(o) {
-        o.style = o.style || function () {
-            return {};
-        };
-        if (o)
-            return style(o.jsx)(o.style);
-        else
-            return this;
+const // 
+    css = picostyle(h),
+
+    smartify = {
+        get: (target, key) => css(key)
     }
-}
+
+export const style = new Proxy(css, smartify);
+export default h;
