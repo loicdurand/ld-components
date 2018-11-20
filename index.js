@@ -9,5 +9,5 @@ const //
     }
 
 export const style = new Proxy(css, smartify);
-export default h;
-export default app;
+export { h };
+export { app };
