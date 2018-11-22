@@ -1,4 +1,7 @@
-import { h, app } from 'hyperapp'
+import {
+    h,
+    app
+} from 'hyperapp'
 
 let _id = 0;
 const //
@@ -12,7 +15,7 @@ const //
         for (var prop in obj) {
             var value = obj[prop]
             prop = hyphenate(prop)
-            // Same as typeof value === 'object', but smaller
+                // Same as typeof value === 'object', but smaller
             if (!value.sub && !Array.isArray(value)) {
                 if (/^(:|>|\.|\*)/.test(prop)) {
                     prop = classname + prop
@@ -36,26 +39,44 @@ const //
     },
     createStyle = obj => {
         var id = "P" + _id++
-        if (Array.isArray(obj)) {
-            let // 
-                css = obj[0],
-                wrapper = "." + id,
-                selectors = /[^;]*{/g;
-            if (!selectors.test(css))
-                insert(wrap(obj, wrapper));
-            else {
+            if (Array.isArray(obj)) {
                 let // 
-                    wrap = wrapper + "{" + (css
-                        .replace(selectors, m => '}' + wrapper + m)
-                        .replace(/&/g, wrapper)
-                    ),
-                    rules = wrap.split(/}/);
-                rules.pop();
-                rules.map(rule => insert(rule + '}'))
+                    css = obj[0],
+                    wrapper = "." + id,
+                    selectors = /[^;]*{/g;
+                if (!selectors.test(css))
+                    insert(wrap(obj, wrapper));
+                else {
+                    let // 
+                        arr = [],
+                        rules = [],
+                        i = 0,
+                        endline = /;|}|{/g,
+                        lines = css.replace(/\s+/g, ' ').replace(endline, m => m + '|').split('|'),
+                        isProp = str => /.*:.*;/.test(str),
+                        isSelector = str => /^(:|>|\.|\*)/.test(str),
+                        isClosingBracket = str => str == '}',
+                        isMediaQuery = str => /^@/.test(str);
+                    lines.map(line => {
+                        line = line.trim();
+                        if (isProp(line)) {
+                            arr.push(i++ == 0 ? wrapper + '{' + line : line);
+                        } else if (isSelector(line)) {
+                            arr.push('}' + wrapper + line.replace(/&/g, wrapper));
+                        } else if (isClosingBracket(line)) {
+                            i = 0;
+                            arr.push(line);
+                        } else if (isMediaQuery(line)) {
+                            arr.push(line);
+                        }
+                    });
+                    rules = arr.join('').split('}');
+                    rules.pop();
+                    rules.map(rule => insert(rule + '}'));
+                }
+            } else {
+                parse(obj, "." + id).forEach(insert)
             }
-        } else {
-            parse(obj, "." + id).forEach(insert)
-        }
         return id
     },
     picostyle = nodeName => {
@@ -82,9 +103,11 @@ export default new Proxy(picostyle, {
 
 export function keyframes(obj) {
     var id = "p" + _id++
-    insert(wrap(parse(obj, id, 1).join(""), "@keyframes " + id))
+        insert(wrap(parse(obj, id, 1).join(""), "@keyframes " + id))
     return id
 }
 
-export { h, app };
-
+export {
+    h,
+    app
+};
