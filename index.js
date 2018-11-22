@@ -10,9 +10,29 @@ function hyphenate(str) {
 function insert(rule) {
     sheet.insertRule(rule, sheet.cssRules.length)
 }
+
 function createStyle(obj) {
-    var id = "p" + _id++
-    Array.isArray(obj) ? insert(wrap(obj, '.' + id)) : parse(obj, "." + id).forEach(insert)
+    var id = "P" + _id++
+    if (Array.isArray(obj)) {
+        let // 
+            css = obj[0],
+            wrapper = "." + id,
+            selectors = /[^;]*{/g;
+        if (!selectors.test(css))
+            insert(wrap(obj, wrapper));
+        else {
+            let // 
+                wrap = wrapper + "{" + (css
+                    .replace(selectors, m => '}' + wrapper + m)
+                    .replace(/&/g, wrapper)
+                ),
+                rules = wrap.split(/}/);
+            rules.pop();
+            rules.map(rule => insert(rule + '}'))
+        }
+    } else {
+        parse(obj, "." + id).forEach(insert)
+    }
     return id
 }
 function wrap(stringToWrap, wrapper) {
@@ -51,11 +71,12 @@ function parse(obj, classname, isInsideObj) {
 const picostyle = function (nodeName) {
     var cache = {}
     return function (decls) {
+        decls = typeof decls == 'string' ? [decls] : decls
         return function (attributes, children) {
             attributes = attributes || {}
             children = attributes.children || children
             var nodeDecls = typeof decls == "function" ? decls(attributes) : decls
-            var key = typeof decls == 'string' ? nodeDecls : JSON.stringify(nodeDecls)
+            var key = JSON.stringify(nodeDecls)
             cache[key] || (cache[key] = createStyle(nodeDecls))
             attributes.class = [attributes.class, cache[key]]
                 .filter(Boolean)
@@ -65,10 +86,9 @@ const picostyle = function (nodeName) {
     }
 }
 
-const smartify = {
+export default new Proxy(picostyle, {
     get: (target, key) => target(key)
-}
-
-export default new Proxy(picostyle, smartify);
+});
 
 export { h, app };
+
