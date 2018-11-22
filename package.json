@@ -16,8 +16,5 @@
     "url": "https://github.com/loicdurand/ld-components/issues"
   },
   "homepage": "https://github.com/loicdurand/ld-components#readme",
-  "dependencies": {
-    "hyperapp": "^1.2.6",
-    "picostyle": "^1.0.2"
-  }
+  "dependencies": {}
 }
