@@ -529,6 +529,10 @@ function _taggedTemplateLiteral(strings, raw) { return Object.freeze(Object.defi
 //     console.log(props)
 // }
 
+var Reperes = _ldComponents2.default.div(function (props) {
+    return '\n    box-sizing: border-box;\n\t-webkit-box-sizing: border-box;\n\t-moz-box-sizing: border-box;\n    ' + (props.visible ? '\n        _* {\n\t        border: 1px solid black;\n\t        background: rgba(0,0,0,.2);\n\t        padding-top: 5px;\n            padding-bottom: 5px;\n    }' : '') + '\n';
+});
+
 var Row = _ldComponents2.default.div(_templateObject);
 
 var Col = _ldComponents2.default.div(function (props) {
@@ -567,35 +571,39 @@ state = {},
     Test = _ldComponents2.default.div(_templateObject2),
     view = function view(state, actions) {
     return (0, _ldComponents.h)(
-        Row,
+        Reperes,
         null,
         (0, _ldComponents.h)(
-            Col,
-            { s: '3', m: '4', l: '6' },
+            Row,
+            null,
             (0, _ldComponents.h)(
-                Span,
-                null,
-                'hello'
-            )
-        ),
-        (0, _ldComponents.h)(
-            Col,
-            { s: '3', m: '4', l: '4' },
-            (0, _ldComponents.h)(
-                Span,
-                { 'class': 'bold' },
-                'world'
-            )
-        ),
-        (0, _ldComponents.h)(
-            Col,
-            { s: '3', m: '4', l: '3' },
-            (0, _ldComponents.h)(
-                Span,
-                null,
-                '!!!'
+                Col,
+                { s: '3', m: '4', l: '6' },
+                (0, _ldComponents.h)(
+                    Span,
+                    null,
+                    'hello'
+                )
             ),
-            (0, _ldComponents.h)(Test, null)
+            (0, _ldComponents.h)(
+                Col,
+                { s: '3', m: '4', l: '4' },
+                (0, _ldComponents.h)(
+                    Span,
+                    { 'class': 'bold' },
+                    'world'
+                )
+            ),
+            (0, _ldComponents.h)(
+                Col,
+                { s: '3', m: '4', l: '3' },
+                (0, _ldComponents.h)(
+                    Span,
+                    null,
+                    '!!!'
+                ),
+                (0, _ldComponents.h)(Test, null)
+            )
         )
     );
 };
@@ -630,7 +638,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '35665' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '43777' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 

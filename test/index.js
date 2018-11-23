@@ -4,6 +4,19 @@ import style, { h, app } from 'ld-components';
 //     console.log(props)
 // }
 
+const Reperes = style.div(props => `
+    box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+    ${ props.visible ? `
+        _* {
+	        border: 1px solid black;
+	        background: rgba(0,0,0,.2);
+	        padding-top: 5px;
+            padding-bottom: 5px;
+    }` : ''}
+`);
+
 const Row = style.div`
     background: rgba(0,0,0,.2);
     margin-left: -15px;
@@ -96,19 +109,21 @@ const //
 `,
 
     view = (state, actions) => (
-        <Row>
-             <Col s="3" m="4" l="6">
-                 <Span>hello</Span>
-             </Col>
-            <Col s="3" m="4" l="4">
-                <Span class="bold">world</Span>
-             </Col>
-            <Col s="3" m="4" l="3">
-                 <Span>!!!</Span>
-                 <Test/>
-             </Col>
+        <Reperes>
+            <Row>
+                <Col s="3" m="4" l="6">
+                    <Span>hello</Span>
+                </Col>
+                <Col s="3" m="4" l="4">
+                    <Span class="bold">world</Span>
+                </Col>
+                <Col s="3" m="4" l="3">
+                    <Span>!!!</Span>
+                    <Test />
+                </Col>
 
-        </Row>
+            </Row>
+        </Reperes>
 
     );
 
