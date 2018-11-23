@@ -8,7 +8,7 @@ const Row = style.div`
     background: rgba(0,0,0,.2);
     margin-left: -15px;
     margin-right: -15px;
-    :before, &:after {
+    :before, &:after, & .bold {
         display: table;
         content: "";
         clear: both;
@@ -49,6 +49,9 @@ const Col = style.div(
             padding-right: 15px;
             float: left;
             position: relative;
+            _.bold{
+                color: #fff;
+            }
             @media all and (min-width: 0px) and (max-width: 639px) {
                 width: ${100 / 12 * props.s}%;
                 margin-left: ${100 / 12 * props.offsetS}%;

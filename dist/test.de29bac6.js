@@ -461,7 +461,7 @@ cache = {},
       sheet = document.head.appendChild(document.createElement("style")).sheet,
       insert = rule => sheet.insertRule(rule, sheet.cssRules.length),
       isProp = str => /.*:.*;/.test(str),
-      isSelector = str => /^(:|>|\.|\*)/.test(str),
+      isSelector = str => /^(_|:|>|\.|\*)/.test(str),
       isClosingBracket = str => /\s?}\s?/.test(str),
       isMediaQuery = str => /^@/.test(str),
       createStyle = decls => {
@@ -470,35 +470,51 @@ cache = {},
         i = 0,
         rule = '',
         endline = /;|}|{/g,
-        lines = decls.replace(/\s+/g, ' ').replace(endline, m => m + '|').split('|');
+        lines = decls.replace(endline, m => m + '|').split('|');
     lines.map(line => {
         line = line.trim();
         if (isProp(line)) {
-            rule += i++ == 0 ? id + '{' + line : line;
+            // eg: color: red;
+            rule += i++ == 0 ? id + '{' + line : line; // rule = '.P1{ color: red;'
         } else if (!isClosingBracket(line)) {
-            insert(rule + '}');
-            rule = '';
-            rule += isSelector(line) ? id + line.replace(/&/g, id) : (i = +isMediaQuery(line) ? 0 : i) ? rule += line : '';
+            insert(rule + '}'); // insert(rule = '.P1{ color: red;}')
+            rule = ''; // ===================================
+            if (isSelector(line)) {
+                // eg: :before, &:after, & .bold {
+                rule += id + line // rule = '.P1:before, &:after, & .bold {'
+                .replace(/&/g, id) // rule = '.P1:before, .P1:after, .P1 .bold {'
+                // ===================================
+                .replace(/_/g, id + ' '); // eg: _.bold { ==> rule = '.P1 .bold {'
+                // ===================================
+            } else if (isMediaQuery(line)) {
+                // eg: @media (...) {
+                rule += line; // no change
+                i = 0; // but new loop
+            }
         }
     });
-    return id.slice(1);
+
+    return id.slice(1); // return id = P1
 },
       picostyle = nodeName => decls => (attributes = {}, children = attributes.children) => {
-    let key = typeof decls == "function" ? decls(attributes) : Array.isArray(decls) ? decls[0] : decls;
+    let key = typeof decls == "function" ? decls(attributes) : decls.toString();
     cache[key] || (cache[key] = createStyle(key));
     attributes.class = [attributes.class, cache[key]].filter(Boolean).join(" ");
     return (0, _hyperapp.h)(nodeName, attributes, children);
 };
 
-exports.default = new Proxy(picostyle, {
-    get: (target, key) => target(key)
+exports.default = new Proxy(picostyle, { // Proxy allows you to write 
+    //      picostyle.div`
+    get: (target, key) => target(key) //          color: red;
+    //      `;                  `
+    // instead of picostyle('div')(` color: red; `) 
 });
 exports.h = _hyperapp.h;
 exports.app = _hyperapp.app;
 },{"hyperapp":"../node_modules/hyperapp/src/index.js"}],"index.js":[function(require,module,exports) {
 'use strict';
 
-var _templateObject = _taggedTemplateLiteral(['\n    background: rgba(0,0,0,.2);\n    margin-left: -15px;\n    margin-right: -15px;\n    :before, &:after {\n        display: table;\n        content: "";\n        clear: both;\n    }'], ['\n    background: rgba(0,0,0,.2);\n    margin-left: -15px;\n    margin-right: -15px;\n    :before, &:after {\n        display: table;\n        content: "";\n        clear: both;\n    }']),
+var _templateObject = _taggedTemplateLiteral(['\n    background: rgba(0,0,0,.2);\n    margin-left: -15px;\n    margin-right: -15px;\n    :before, &:after, & .bold {\n        display: table;\n        content: "";\n        clear: both;\n    }'], ['\n    background: rgba(0,0,0,.2);\n    margin-left: -15px;\n    margin-right: -15px;\n    :before, &:after, & .bold {\n        display: table;\n        content: "";\n        clear: both;\n    }']),
     _templateObject2 = _taggedTemplateLiteral(['\n    color: red;\n    text-transform: uppercase;\n    :before, &:after {\n        content: "z";\n        color: blue;\n        font-size: 4em;\n    }\n    @media all and (max-width: 600px) {\n        text-decoration: underline;\n        font-style: italic;\n    }\n'], ['\n    color: red;\n    text-transform: uppercase;\n    :before, &:after {\n        content: "z";\n        color: blue;\n        font-size: 4em;\n    }\n    @media all and (max-width: 600px) {\n        text-decoration: underline;\n        font-style: italic;\n    }\n']);
 
 var _ldComponents = require('ld-components');
@@ -540,7 +556,7 @@ var Col = _ldComponents2.default.div(function (props) {
     //         marginLeft: `${100 / 12 * props.offsetL}%`
     //     }
     // }
-    return '\n            display: block;\n            background: rgba(0,0,0,.4);\n            padding-left: 15px;\n            padding-right: 15px;\n            float: left;\n            position: relative;\n            @media all and (min-width: 0px) and (max-width: 639px) {\n                width: ' + 100 / 12 * props.s + '%;\n                margin-left: ' + 100 / 12 * props.offsetS + '%;\n            }\n            @media all and (min-width: 640px) and (max-width: 991px) {\n                width: ' + 100 / 12 * props.m + '%;\n                margin-left: ' + 100 / 12 * props.offsetM + '%;\n            }\n            @media all and (min-width: 992px) {\n                width: ' + 100 / 12 * props.m + '%;\n                margin-left: ' + 100 / 12 * props.offsetL + '%;\n            }\n        ';
+    return '\n            display: block;\n            background: rgba(0,0,0,.4);\n            padding-left: 15px;\n            padding-right: 15px;\n            float: left;\n            position: relative;\n            _.bold{\n                color: #fff;\n            }\n            @media all and (min-width: 0px) and (max-width: 639px) {\n                width: ' + 100 / 12 * props.s + '%;\n                margin-left: ' + 100 / 12 * props.offsetS + '%;\n            }\n            @media all and (min-width: 640px) and (max-width: 991px) {\n                width: ' + 100 / 12 * props.m + '%;\n                margin-left: ' + 100 / 12 * props.offsetM + '%;\n            }\n            @media all and (min-width: 992px) {\n                width: ' + 100 / 12 * props.m + '%;\n                margin-left: ' + 100 / 12 * props.offsetL + '%;\n            }\n        ';
 });
 
 var Span = (0, _ldComponents2.default)('span')('\n    color: blue;\n    background: red;\n    text-transform: uppercase;\n    .bold {\n        font-weight: bold;\n    }\n');
@@ -614,7 +630,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '41941' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '35665' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
