@@ -5,7 +5,7 @@ let _id = 0;
 const //
     cache = {},
     sheet = document.head.appendChild(document.createElement("style")).sheet,
-    insert = rule => 1 + sheet.insertRule(rule, sheet.cssRules.length) && '',
+    insert = rule => 1 + sheet.insertRule(rule, sheet.cssRules.length) && '',           // allways return ''
     isProp = str => /.*:.*;/.test(str),
     isSelector = str => /^(&|:|>|\.|\*)/.test(str),
     isClosingBracket = str => /\s?}\s?/.test(str),
@@ -24,11 +24,11 @@ const //
             } else if (!isClosingBracket(line)) {
                 if (i++ != 0)
                     rule = insert(rule + '}');                                          // insert(rule = '.P1{ color: red;}')
-                                                                                        // ===================================
+                //                                                                         =================================
                 if (isSelector(line))                                                   // eg: :before, &:after, & .bold {
-                    rule += id + line.replace(/&/g, id)                                 // rule = '.P1:before, .P1:after, .P1 .bold {'
-                                                                                        // ===================================
-                else if (i = !isMediaQuery(line))                                       // eg: @media (...) {
+                    rule += id + line.replace(/^&/g, '').replace(/&/g, id)              // rule = '.P1:before, .P1:after, .P1 .bold {'
+                //                                                                         ====================================
+                else if (isMediaQuery(line) && !!!(i = 0))                              // eg: @media (...) {
                     rule += line;                                                       // no change but new loop ( i == 0 )
             } else {                                                                    // then
                 i = !!(rule = insert(rule + ('@' == rule.charAt(0) ? '}}' : '}')));     // insert(@media(...){ .P1{ color: red;} })
@@ -47,9 +47,9 @@ const //
     };
 
 export default new Proxy(picostyle, {                   // Proxy allows you to write 
-                                                        //      picostyle.div`...`
+    //                                                          picostyle.div`...`
     get: (target, key) => target(key)                   // instead of 
-                                                        //      picostyle('div')(`...`)                `
+    //                                                          picostyle('div')(`...`)                `
 });
 
 export { h, app };
