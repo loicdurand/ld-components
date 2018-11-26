@@ -445,23 +445,23 @@ function app(state, actions, view, container) {
   }
 }
 },{}],"node_modules/ld-components/index.js":[function(require,module,exports) {
-"use strict";
+'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
 exports.app = exports.h = undefined;
 
-var _hyperapp = require("hyperapp");
+var _hyperapp = require('hyperapp');
 
 let _id = 0;
 
 const //
 cache = {},
       sheet = document.head.appendChild(document.createElement("style")).sheet,
-      insert = rule => sheet.insertRule(rule, sheet.cssRules.length),
+      insert = rule => 1 + sheet.insertRule(rule, sheet.cssRules.length) && '',
       isProp = str => /.*:.*;/.test(str),
-      isSelector = str => /^(_|:|>|\.|\*)/.test(str),
+      isSelector = str => /^(&|:|>|\.|\*)/.test(str),
       isClosingBracket = str => /\s?}\s?/.test(str),
       isMediaQuery = str => /^@/.test(str),
       createStyle = decls => {
@@ -477,20 +477,16 @@ cache = {},
             // eg: color: red;
             rule += i++ == 0 ? id + '{' + line : line; // rule = '.P1{ color: red;'
         } else if (!isClosingBracket(line)) {
-            insert(rule + '}'); // insert(rule = '.P1{ color: red;}')
-            rule = ''; // ===================================
-            if (isSelector(line)) {
-                // eg: :before, &:after, & .bold {
-                rule += id + line // rule = '.P1:before, &:after, & .bold {'
-                .replace(/&/g, id) // rule = '.P1:before, .P1:after, .P1 .bold {'
+            if (i++ != 0) rule = insert(rule + '}'); // insert(rule = '.P1{ color: red;}')
+            // ===================================
+            if (isSelector(line)) // eg: :before, &:after, & .bold {
+                rule += id + line.replace(/&/g, id); // rule = '.P1:before, .P1:after, .P1 .bold {'
                 // ===================================
-                .replace(/_/g, id + ' '); // eg: _.bold { ==> rule = '.P1 .bold {'
-                // ===================================
-            } else if (isMediaQuery(line)) {
-                // eg: @media (...) {
-                rule += line; // no change
-                i = 0; // but new loop
-            }
+            else if (i = !isMediaQuery(line)) // eg: @media (...) {
+                    rule += line; // no change but new loop ( i == 0 )
+        } else {
+            // then
+            i = !!(rule = insert(rule + ('@' == rule.charAt(0) ? '}}' : '}'))); // insert(@media(...){ .P1{ color: red;} })
         }
     });
 
@@ -504,10 +500,9 @@ cache = {},
 };
 
 exports.default = new Proxy(picostyle, { // Proxy allows you to write 
-    //      picostyle.div`
-    get: (target, key) => target(key) //          color: red;
-    //      `;                  `
-    // instead of picostyle('div')(` color: red; `) 
+    //      picostyle.div`...`
+    get: (target, key) => target(key) // instead of 
+    //      picostyle('div')(`...`)                `
 });
 exports.h = _hyperapp.h;
 exports.app = _hyperapp.app;
@@ -530,7 +525,7 @@ function _taggedTemplateLiteral(strings, raw) { return Object.freeze(Object.defi
 // }
 
 var Reperes = _ldComponents2.default.div(function (props) {
-    return '\n    box-sizing: border-box;\n\t-webkit-box-sizing: border-box;\n\t-moz-box-sizing: border-box;\n    ' + (props.visible ? '\n        _* {\n\t        border: 1px solid black;\n\t        background: rgba(0,0,0,.2);\n\t        padding-top: 5px;\n            padding-bottom: 5px;\n    }' : '') + '\n';
+    return '\n    box-sizing: border-box;\n\t-webkit-box-sizing: border-box;\n\t-moz-box-sizing: border-box;\n    ' + (props.visible ? '\n        & * {\n\t        border: 1px solid black;\n\t        background: rgba(0,0,0,.2);\n\t        padding-top: 5px;\n            padding-bottom: 5px;\n    }' : '') + '\n';
 });
 
 var Row = _ldComponents2.default.div(_templateObject);
@@ -560,10 +555,10 @@ var Col = _ldComponents2.default.div(function (props) {
     //         marginLeft: `${100 / 12 * props.offsetL}%`
     //     }
     // }
-    return '\n            display: block;\n            background: rgba(0,0,0,.4);\n            padding-left: 15px;\n            padding-right: 15px;\n            float: left;\n            position: relative;\n            _.bold{\n                color: #fff;\n            }\n            @media all and (min-width: 0px) and (max-width: 639px) {\n                width: ' + 100 / 12 * props.s + '%;\n                margin-left: ' + 100 / 12 * props.offsetS + '%;\n            }\n            @media all and (min-width: 640px) and (max-width: 991px) {\n                width: ' + 100 / 12 * props.m + '%;\n                margin-left: ' + 100 / 12 * props.offsetM + '%;\n            }\n            @media all and (min-width: 992px) {\n                width: ' + 100 / 12 * props.m + '%;\n                margin-left: ' + 100 / 12 * props.offsetL + '%;\n            }\n        ';
+    return '\n            display: block;\n            background: rgba(0,0,0,.4);\n            padding-left: 15px;\n            padding-right: 15px;\n            float: left;\n            position: relative;\n            .bold{\n                color: #fff;\n            }\n            @media all and (min-width: 0px) and (max-width: 639px) {\n                width: ' + 100 / 12 * props.s + '%;\n                margin-left: ' + 100 / 12 * props.offsetS + '%;\n            }\n            @media all and (min-width: 640px) and (max-width: 991px) {\n                width: ' + 100 / 12 * props.m + '%;\n                margin-left: ' + 100 / 12 * props.offsetM + '%;\n            }\n            @media all and (min-width: 992px) {\n                width: ' + 100 / 12 * props.m + '%;\n                margin-left: ' + 100 / 12 * props.offsetL + '%;\n            }\n        ';
 });
 
-var Span = (0, _ldComponents2.default)('span')('\n    color: blue;\n    background: red;\n    text-transform: uppercase;\n    .bold {\n        font-weight: bold;\n    }\n');
+var Span = (0, _ldComponents2.default)('span')('\n    & .bold {\n        font-weight: bold;\n    }\n    color: blue;\n    background: red;\n    text-transform: uppercase;\n    \n');
 
 var // 
 state = {},
@@ -572,7 +567,7 @@ state = {},
     view = function view(state, actions) {
     return (0, _ldComponents.h)(
         Reperes,
-        null,
+        { visible: true },
         (0, _ldComponents.h)(
             Row,
             null,
@@ -638,7 +633,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '43777' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '41417' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 

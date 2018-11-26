@@ -9,7 +9,7 @@ const Reperes = style.div(props => `
 	-webkit-box-sizing: border-box;
 	-moz-box-sizing: border-box;
     ${ props.visible ? `
-        _* {
+        & * {
 	        border: 1px solid black;
 	        background: rgba(0,0,0,.2);
 	        padding-top: 5px;
@@ -62,7 +62,7 @@ const Col = style.div(
             padding-right: 15px;
             float: left;
             position: relative;
-            _.bold{
+            .bold{
                 color: #fff;
             }
             @media all and (min-width: 0px) and (max-width: 639px) {
@@ -82,12 +82,13 @@ const Col = style.div(
 )
 
 const Span = style('span')(`
+    & .bold {
+        font-weight: bold;
+    }
     color: blue;
     background: red;
     text-transform: uppercase;
-    .bold {
-        font-weight: bold;
-    }
+    
 `)
 
 
@@ -109,7 +110,7 @@ const //
 `,
 
     view = (state, actions) => (
-        <Reperes>
+        <Reperes visible>
             <Row>
                 <Col s="3" m="4" l="6">
                     <Span>hello</Span>
