@@ -1,7 +1,5 @@
 import { h, app } from 'hyperapp';
 
-let _id = 0;
-
 const //
     cache = {},
     sheet = document.head.appendChild(document.createElement("style")).sheet,
@@ -12,7 +10,7 @@ const //
     isMediaQuery = str => /^@/.test(str),
     createStyle = decls => {
         let // 
-            id = ".P" + _id++,
+            id = ".P" + Math.floor(Math.random() * 1e3),
             i = 0,
             rule = '',
             endline = /;|}|{/g,
