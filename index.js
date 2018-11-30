@@ -52,4 +52,4 @@ export default new Proxy(picostyle, {                   // Proxy allows you to w
     //                                                          picostyle('div')(`...`)                `
 });
 
-export { h, app };
+export { h, app }; // re-export hyperapp's functions
