@@ -38,6 +38,8 @@ const //
         return id.slice(1);                                                             // return id = P1
     },
     picostyle = nodeName => decls => (attributes = {}, children = attributes.children) => {
+        if (nodeName == 'raw')                                                          // bybass intended to insert
+            return insert(decls);                                                       // CSS rule as is ( eg: @keyframes ... )
         let key = typeof decls == "function" ? decls(attributes) : decls.toString();
         cache[key] || (cache[key] = createStyle(key));
         attributes.class = [attributes.class, cache[key]]
@@ -52,4 +54,6 @@ export default new Proxy(picostyle, {                   // Proxy allows you to w
     //                                                          picostyle('div')(`...`)                `
 });
 
-export { h, app }; // re-export hyperapp's functions
+
+export { h, app };
+
