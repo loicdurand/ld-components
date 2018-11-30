@@ -38,8 +38,6 @@ const //
         return id.slice(1);                                                             // return id = P1
     },
     picostyle = nodeName => decls => (attributes = {}, children = attributes.children) => {
-        if (nodeName == 'raw')                                                          // bybass intended to insert
-            return insert(decls);                                                       // CSS rule as is ( eg: @keyframes ... )
         let key = typeof decls == "function" ? decls(attributes) : decls.toString();
         cache[key] || (cache[key] = createStyle(key));
         attributes.class = [attributes.class, cache[key]]
