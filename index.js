@@ -1,5 +1,7 @@
 import { h, app } from 'hyperapp';
 
+let _id = Math.floor(Math.random() * 1e6);
+
 const //
     cache = {},
     sheet = document.head.appendChild(document.createElement("style")).sheet,
@@ -10,7 +12,7 @@ const //
     isMediaQuery = str => /^@/.test(str),
     createStyle = decls => {
         let // 
-            id = ".P" + Math.floor(Math.random() * 1e3),
+            id = ".P" + _id++,
             i = 0,
             rule = '',
             endline = /;|}|{/g,
@@ -52,4 +54,5 @@ export default new Proxy(picostyle, {                   // Proxy allows you to w
 
 
 export { h, app };
+
 
