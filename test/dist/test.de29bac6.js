@@ -103,7 +103,493 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 
   // Override the current require with this new one
   return newRequire;
-})({"node_modules/hyperapp/src/index.js":[function(require,module,exports) {
+})({"node_modules/core-js/library/modules/_global.js":[function(require,module,exports) {
+
+// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
+var global = module.exports = typeof window != 'undefined' && window.Math == Math
+  ? window : typeof self != 'undefined' && self.Math == Math ? self
+  // eslint-disable-next-line no-new-func
+  : Function('return this')();
+if (typeof __g == 'number') __g = global; // eslint-disable-line no-undef
+
+},{}],"node_modules/core-js/library/modules/_core.js":[function(require,module,exports) {
+var core = module.exports = { version: '2.6.1' };
+if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
+
+},{}],"node_modules/core-js/library/modules/_a-function.js":[function(require,module,exports) {
+module.exports = function (it) {
+  if (typeof it != 'function') throw TypeError(it + ' is not a function!');
+  return it;
+};
+
+},{}],"node_modules/core-js/library/modules/_ctx.js":[function(require,module,exports) {
+// optional / simple context binding
+var aFunction = require('./_a-function');
+module.exports = function (fn, that, length) {
+  aFunction(fn);
+  if (that === undefined) return fn;
+  switch (length) {
+    case 1: return function (a) {
+      return fn.call(that, a);
+    };
+    case 2: return function (a, b) {
+      return fn.call(that, a, b);
+    };
+    case 3: return function (a, b, c) {
+      return fn.call(that, a, b, c);
+    };
+  }
+  return function (/* ...args */) {
+    return fn.apply(that, arguments);
+  };
+};
+
+},{"./_a-function":"node_modules/core-js/library/modules/_a-function.js"}],"node_modules/core-js/library/modules/_is-object.js":[function(require,module,exports) {
+module.exports = function (it) {
+  return typeof it === 'object' ? it !== null : typeof it === 'function';
+};
+
+},{}],"node_modules/core-js/library/modules/_an-object.js":[function(require,module,exports) {
+var isObject = require('./_is-object');
+module.exports = function (it) {
+  if (!isObject(it)) throw TypeError(it + ' is not an object!');
+  return it;
+};
+
+},{"./_is-object":"node_modules/core-js/library/modules/_is-object.js"}],"node_modules/core-js/library/modules/_fails.js":[function(require,module,exports) {
+module.exports = function (exec) {
+  try {
+    return !!exec();
+  } catch (e) {
+    return true;
+  }
+};
+
+},{}],"node_modules/core-js/library/modules/_descriptors.js":[function(require,module,exports) {
+// Thank's IE8 for his funny defineProperty
+module.exports = !require('./_fails')(function () {
+  return Object.defineProperty({}, 'a', { get: function () { return 7; } }).a != 7;
+});
+
+},{"./_fails":"node_modules/core-js/library/modules/_fails.js"}],"node_modules/core-js/library/modules/_dom-create.js":[function(require,module,exports) {
+var isObject = require('./_is-object');
+var document = require('./_global').document;
+// typeof document.createElement is 'object' in old IE
+var is = isObject(document) && isObject(document.createElement);
+module.exports = function (it) {
+  return is ? document.createElement(it) : {};
+};
+
+},{"./_is-object":"node_modules/core-js/library/modules/_is-object.js","./_global":"node_modules/core-js/library/modules/_global.js"}],"node_modules/core-js/library/modules/_ie8-dom-define.js":[function(require,module,exports) {
+module.exports = !require('./_descriptors') && !require('./_fails')(function () {
+  return Object.defineProperty(require('./_dom-create')('div'), 'a', { get: function () { return 7; } }).a != 7;
+});
+
+},{"./_descriptors":"node_modules/core-js/library/modules/_descriptors.js","./_fails":"node_modules/core-js/library/modules/_fails.js","./_dom-create":"node_modules/core-js/library/modules/_dom-create.js"}],"node_modules/core-js/library/modules/_to-primitive.js":[function(require,module,exports) {
+// 7.1.1 ToPrimitive(input [, PreferredType])
+var isObject = require('./_is-object');
+// instead of the ES6 spec version, we didn't implement @@toPrimitive case
+// and the second argument - flag - preferred type is a string
+module.exports = function (it, S) {
+  if (!isObject(it)) return it;
+  var fn, val;
+  if (S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it))) return val;
+  if (typeof (fn = it.valueOf) == 'function' && !isObject(val = fn.call(it))) return val;
+  if (!S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it))) return val;
+  throw TypeError("Can't convert object to primitive value");
+};
+
+},{"./_is-object":"node_modules/core-js/library/modules/_is-object.js"}],"node_modules/core-js/library/modules/_object-dp.js":[function(require,module,exports) {
+var anObject = require('./_an-object');
+var IE8_DOM_DEFINE = require('./_ie8-dom-define');
+var toPrimitive = require('./_to-primitive');
+var dP = Object.defineProperty;
+
+exports.f = require('./_descriptors') ? Object.defineProperty : function defineProperty(O, P, Attributes) {
+  anObject(O);
+  P = toPrimitive(P, true);
+  anObject(Attributes);
+  if (IE8_DOM_DEFINE) try {
+    return dP(O, P, Attributes);
+  } catch (e) { /* empty */ }
+  if ('get' in Attributes || 'set' in Attributes) throw TypeError('Accessors not supported!');
+  if ('value' in Attributes) O[P] = Attributes.value;
+  return O;
+};
+
+},{"./_an-object":"node_modules/core-js/library/modules/_an-object.js","./_ie8-dom-define":"node_modules/core-js/library/modules/_ie8-dom-define.js","./_to-primitive":"node_modules/core-js/library/modules/_to-primitive.js","./_descriptors":"node_modules/core-js/library/modules/_descriptors.js"}],"node_modules/core-js/library/modules/_property-desc.js":[function(require,module,exports) {
+module.exports = function (bitmap, value) {
+  return {
+    enumerable: !(bitmap & 1),
+    configurable: !(bitmap & 2),
+    writable: !(bitmap & 4),
+    value: value
+  };
+};
+
+},{}],"node_modules/core-js/library/modules/_hide.js":[function(require,module,exports) {
+var dP = require('./_object-dp');
+var createDesc = require('./_property-desc');
+module.exports = require('./_descriptors') ? function (object, key, value) {
+  return dP.f(object, key, createDesc(1, value));
+} : function (object, key, value) {
+  object[key] = value;
+  return object;
+};
+
+},{"./_object-dp":"node_modules/core-js/library/modules/_object-dp.js","./_property-desc":"node_modules/core-js/library/modules/_property-desc.js","./_descriptors":"node_modules/core-js/library/modules/_descriptors.js"}],"node_modules/core-js/library/modules/_has.js":[function(require,module,exports) {
+var hasOwnProperty = {}.hasOwnProperty;
+module.exports = function (it, key) {
+  return hasOwnProperty.call(it, key);
+};
+
+},{}],"node_modules/core-js/library/modules/_export.js":[function(require,module,exports) {
+
+var global = require('./_global');
+var core = require('./_core');
+var ctx = require('./_ctx');
+var hide = require('./_hide');
+var has = require('./_has');
+var PROTOTYPE = 'prototype';
+
+var $export = function (type, name, source) {
+  var IS_FORCED = type & $export.F;
+  var IS_GLOBAL = type & $export.G;
+  var IS_STATIC = type & $export.S;
+  var IS_PROTO = type & $export.P;
+  var IS_BIND = type & $export.B;
+  var IS_WRAP = type & $export.W;
+  var exports = IS_GLOBAL ? core : core[name] || (core[name] = {});
+  var expProto = exports[PROTOTYPE];
+  var target = IS_GLOBAL ? global : IS_STATIC ? global[name] : (global[name] || {})[PROTOTYPE];
+  var key, own, out;
+  if (IS_GLOBAL) source = name;
+  for (key in source) {
+    // contains in native
+    own = !IS_FORCED && target && target[key] !== undefined;
+    if (own && has(exports, key)) continue;
+    // export native or passed
+    out = own ? target[key] : source[key];
+    // prevent global pollution for namespaces
+    exports[key] = IS_GLOBAL && typeof target[key] != 'function' ? source[key]
+    // bind timers to global for call from export context
+    : IS_BIND && own ? ctx(out, global)
+    // wrap global constructors for prevent change them in library
+    : IS_WRAP && target[key] == out ? (function (C) {
+      var F = function (a, b, c) {
+        if (this instanceof C) {
+          switch (arguments.length) {
+            case 0: return new C();
+            case 1: return new C(a);
+            case 2: return new C(a, b);
+          } return new C(a, b, c);
+        } return C.apply(this, arguments);
+      };
+      F[PROTOTYPE] = C[PROTOTYPE];
+      return F;
+    // make static versions for prototype methods
+    })(out) : IS_PROTO && typeof out == 'function' ? ctx(Function.call, out) : out;
+    // export proto methods to core.%CONSTRUCTOR%.methods.%NAME%
+    if (IS_PROTO) {
+      (exports.virtual || (exports.virtual = {}))[key] = out;
+      // export proto methods to core.%CONSTRUCTOR%.prototype.%NAME%
+      if (type & $export.R && expProto && !expProto[key]) hide(expProto, key, out);
+    }
+  }
+};
+// type bitmap
+$export.F = 1;   // forced
+$export.G = 2;   // global
+$export.S = 4;   // static
+$export.P = 8;   // proto
+$export.B = 16;  // bind
+$export.W = 32;  // wrap
+$export.U = 64;  // safe
+$export.R = 128; // real proto method for `library`
+module.exports = $export;
+
+},{"./_global":"node_modules/core-js/library/modules/_global.js","./_core":"node_modules/core-js/library/modules/_core.js","./_ctx":"node_modules/core-js/library/modules/_ctx.js","./_hide":"node_modules/core-js/library/modules/_hide.js","./_has":"node_modules/core-js/library/modules/_has.js"}],"node_modules/core-js/library/modules/_cof.js":[function(require,module,exports) {
+var toString = {}.toString;
+
+module.exports = function (it) {
+  return toString.call(it).slice(8, -1);
+};
+
+},{}],"node_modules/core-js/library/modules/_iobject.js":[function(require,module,exports) {
+// fallback for non-array-like ES3 and non-enumerable old V8 strings
+var cof = require('./_cof');
+// eslint-disable-next-line no-prototype-builtins
+module.exports = Object('z').propertyIsEnumerable(0) ? Object : function (it) {
+  return cof(it) == 'String' ? it.split('') : Object(it);
+};
+
+},{"./_cof":"node_modules/core-js/library/modules/_cof.js"}],"node_modules/core-js/library/modules/_defined.js":[function(require,module,exports) {
+// 7.2.1 RequireObjectCoercible(argument)
+module.exports = function (it) {
+  if (it == undefined) throw TypeError("Can't call method on  " + it);
+  return it;
+};
+
+},{}],"node_modules/core-js/library/modules/_to-iobject.js":[function(require,module,exports) {
+// to indexed object, toObject with fallback for non-array-like ES3 strings
+var IObject = require('./_iobject');
+var defined = require('./_defined');
+module.exports = function (it) {
+  return IObject(defined(it));
+};
+
+},{"./_iobject":"node_modules/core-js/library/modules/_iobject.js","./_defined":"node_modules/core-js/library/modules/_defined.js"}],"node_modules/core-js/library/modules/_to-integer.js":[function(require,module,exports) {
+// 7.1.4 ToInteger
+var ceil = Math.ceil;
+var floor = Math.floor;
+module.exports = function (it) {
+  return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
+};
+
+},{}],"node_modules/core-js/library/modules/_to-length.js":[function(require,module,exports) {
+// 7.1.15 ToLength
+var toInteger = require('./_to-integer');
+var min = Math.min;
+module.exports = function (it) {
+  return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
+};
+
+},{"./_to-integer":"node_modules/core-js/library/modules/_to-integer.js"}],"node_modules/core-js/library/modules/_to-absolute-index.js":[function(require,module,exports) {
+var toInteger = require('./_to-integer');
+var max = Math.max;
+var min = Math.min;
+module.exports = function (index, length) {
+  index = toInteger(index);
+  return index < 0 ? max(index + length, 0) : min(index, length);
+};
+
+},{"./_to-integer":"node_modules/core-js/library/modules/_to-integer.js"}],"node_modules/core-js/library/modules/_array-includes.js":[function(require,module,exports) {
+// false -> Array#indexOf
+// true  -> Array#includes
+var toIObject = require('./_to-iobject');
+var toLength = require('./_to-length');
+var toAbsoluteIndex = require('./_to-absolute-index');
+module.exports = function (IS_INCLUDES) {
+  return function ($this, el, fromIndex) {
+    var O = toIObject($this);
+    var length = toLength(O.length);
+    var index = toAbsoluteIndex(fromIndex, length);
+    var value;
+    // Array#includes uses SameValueZero equality algorithm
+    // eslint-disable-next-line no-self-compare
+    if (IS_INCLUDES && el != el) while (length > index) {
+      value = O[index++];
+      // eslint-disable-next-line no-self-compare
+      if (value != value) return true;
+    // Array#indexOf ignores holes, Array#includes - not
+    } else for (;length > index; index++) if (IS_INCLUDES || index in O) {
+      if (O[index] === el) return IS_INCLUDES || index || 0;
+    } return !IS_INCLUDES && -1;
+  };
+};
+
+},{"./_to-iobject":"node_modules/core-js/library/modules/_to-iobject.js","./_to-length":"node_modules/core-js/library/modules/_to-length.js","./_to-absolute-index":"node_modules/core-js/library/modules/_to-absolute-index.js"}],"node_modules/core-js/library/modules/_library.js":[function(require,module,exports) {
+module.exports = true;
+
+},{}],"node_modules/core-js/library/modules/_shared.js":[function(require,module,exports) {
+
+var core = require('./_core');
+var global = require('./_global');
+var SHARED = '__core-js_shared__';
+var store = global[SHARED] || (global[SHARED] = {});
+
+(module.exports = function (key, value) {
+  return store[key] || (store[key] = value !== undefined ? value : {});
+})('versions', []).push({
+  version: core.version,
+  mode: require('./_library') ? 'pure' : 'global',
+  copyright: '© 2018 Denis Pushkarev (zloirock.ru)'
+});
+
+},{"./_core":"node_modules/core-js/library/modules/_core.js","./_global":"node_modules/core-js/library/modules/_global.js","./_library":"node_modules/core-js/library/modules/_library.js"}],"node_modules/core-js/library/modules/_uid.js":[function(require,module,exports) {
+var id = 0;
+var px = Math.random();
+module.exports = function (key) {
+  return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + px).toString(36));
+};
+
+},{}],"node_modules/core-js/library/modules/_shared-key.js":[function(require,module,exports) {
+var shared = require('./_shared')('keys');
+var uid = require('./_uid');
+module.exports = function (key) {
+  return shared[key] || (shared[key] = uid(key));
+};
+
+},{"./_shared":"node_modules/core-js/library/modules/_shared.js","./_uid":"node_modules/core-js/library/modules/_uid.js"}],"node_modules/core-js/library/modules/_object-keys-internal.js":[function(require,module,exports) {
+var has = require('./_has');
+var toIObject = require('./_to-iobject');
+var arrayIndexOf = require('./_array-includes')(false);
+var IE_PROTO = require('./_shared-key')('IE_PROTO');
+
+module.exports = function (object, names) {
+  var O = toIObject(object);
+  var i = 0;
+  var result = [];
+  var key;
+  for (key in O) if (key != IE_PROTO) has(O, key) && result.push(key);
+  // Don't enum bug & hidden keys
+  while (names.length > i) if (has(O, key = names[i++])) {
+    ~arrayIndexOf(result, key) || result.push(key);
+  }
+  return result;
+};
+
+},{"./_has":"node_modules/core-js/library/modules/_has.js","./_to-iobject":"node_modules/core-js/library/modules/_to-iobject.js","./_array-includes":"node_modules/core-js/library/modules/_array-includes.js","./_shared-key":"node_modules/core-js/library/modules/_shared-key.js"}],"node_modules/core-js/library/modules/_enum-bug-keys.js":[function(require,module,exports) {
+// IE 8- don't enum bug keys
+module.exports = (
+  'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'
+).split(',');
+
+},{}],"node_modules/core-js/library/modules/_object-keys.js":[function(require,module,exports) {
+// 19.1.2.14 / 15.2.3.14 Object.keys(O)
+var $keys = require('./_object-keys-internal');
+var enumBugKeys = require('./_enum-bug-keys');
+
+module.exports = Object.keys || function keys(O) {
+  return $keys(O, enumBugKeys);
+};
+
+},{"./_object-keys-internal":"node_modules/core-js/library/modules/_object-keys-internal.js","./_enum-bug-keys":"node_modules/core-js/library/modules/_enum-bug-keys.js"}],"node_modules/core-js/library/modules/_object-dps.js":[function(require,module,exports) {
+var dP = require('./_object-dp');
+var anObject = require('./_an-object');
+var getKeys = require('./_object-keys');
+
+module.exports = require('./_descriptors') ? Object.defineProperties : function defineProperties(O, Properties) {
+  anObject(O);
+  var keys = getKeys(Properties);
+  var length = keys.length;
+  var i = 0;
+  var P;
+  while (length > i) dP.f(O, P = keys[i++], Properties[P]);
+  return O;
+};
+
+},{"./_object-dp":"node_modules/core-js/library/modules/_object-dp.js","./_an-object":"node_modules/core-js/library/modules/_an-object.js","./_object-keys":"node_modules/core-js/library/modules/_object-keys.js","./_descriptors":"node_modules/core-js/library/modules/_descriptors.js"}],"node_modules/core-js/library/modules/es6.object.define-properties.js":[function(require,module,exports) {
+var $export = require('./_export');
+// 19.1.2.3 / 15.2.3.7 Object.defineProperties(O, Properties)
+$export($export.S + $export.F * !require('./_descriptors'), 'Object', { defineProperties: require('./_object-dps') });
+
+},{"./_export":"node_modules/core-js/library/modules/_export.js","./_descriptors":"node_modules/core-js/library/modules/_descriptors.js","./_object-dps":"node_modules/core-js/library/modules/_object-dps.js"}],"node_modules/core-js/library/fn/object/define-properties.js":[function(require,module,exports) {
+require('../../modules/es6.object.define-properties');
+var $Object = require('../../modules/_core').Object;
+module.exports = function defineProperties(T, D) {
+  return $Object.defineProperties(T, D);
+};
+
+},{"../../modules/es6.object.define-properties":"node_modules/core-js/library/modules/es6.object.define-properties.js","../../modules/_core":"node_modules/core-js/library/modules/_core.js"}],"node_modules/babel-runtime/core-js/object/define-properties.js":[function(require,module,exports) {
+module.exports = { "default": require("core-js/library/fn/object/define-properties"), __esModule: true };
+},{"core-js/library/fn/object/define-properties":"node_modules/core-js/library/fn/object/define-properties.js"}],"node_modules/core-js/library/modules/_meta.js":[function(require,module,exports) {
+var META = require('./_uid')('meta');
+var isObject = require('./_is-object');
+var has = require('./_has');
+var setDesc = require('./_object-dp').f;
+var id = 0;
+var isExtensible = Object.isExtensible || function () {
+  return true;
+};
+var FREEZE = !require('./_fails')(function () {
+  return isExtensible(Object.preventExtensions({}));
+});
+var setMeta = function (it) {
+  setDesc(it, META, { value: {
+    i: 'O' + ++id, // object ID
+    w: {}          // weak collections IDs
+  } });
+};
+var fastKey = function (it, create) {
+  // return primitive with prefix
+  if (!isObject(it)) return typeof it == 'symbol' ? it : (typeof it == 'string' ? 'S' : 'P') + it;
+  if (!has(it, META)) {
+    // can't set metadata to uncaught frozen object
+    if (!isExtensible(it)) return 'F';
+    // not necessary to add metadata
+    if (!create) return 'E';
+    // add missing metadata
+    setMeta(it);
+  // return object ID
+  } return it[META].i;
+};
+var getWeak = function (it, create) {
+  if (!has(it, META)) {
+    // can't set metadata to uncaught frozen object
+    if (!isExtensible(it)) return true;
+    // not necessary to add metadata
+    if (!create) return false;
+    // add missing metadata
+    setMeta(it);
+  // return hash weak collections IDs
+  } return it[META].w;
+};
+// add metadata on freeze-family methods calling
+var onFreeze = function (it) {
+  if (FREEZE && meta.NEED && isExtensible(it) && !has(it, META)) setMeta(it);
+  return it;
+};
+var meta = module.exports = {
+  KEY: META,
+  NEED: false,
+  fastKey: fastKey,
+  getWeak: getWeak,
+  onFreeze: onFreeze
+};
+
+},{"./_uid":"node_modules/core-js/library/modules/_uid.js","./_is-object":"node_modules/core-js/library/modules/_is-object.js","./_has":"node_modules/core-js/library/modules/_has.js","./_object-dp":"node_modules/core-js/library/modules/_object-dp.js","./_fails":"node_modules/core-js/library/modules/_fails.js"}],"node_modules/core-js/library/modules/_object-sap.js":[function(require,module,exports) {
+// most Object methods by ES6 should accept primitives
+var $export = require('./_export');
+var core = require('./_core');
+var fails = require('./_fails');
+module.exports = function (KEY, exec) {
+  var fn = (core.Object || {})[KEY] || Object[KEY];
+  var exp = {};
+  exp[KEY] = exec(fn);
+  $export($export.S + $export.F * fails(function () { fn(1); }), 'Object', exp);
+};
+
+},{"./_export":"node_modules/core-js/library/modules/_export.js","./_core":"node_modules/core-js/library/modules/_core.js","./_fails":"node_modules/core-js/library/modules/_fails.js"}],"node_modules/core-js/library/modules/es6.object.freeze.js":[function(require,module,exports) {
+// 19.1.2.5 Object.freeze(O)
+var isObject = require('./_is-object');
+var meta = require('./_meta').onFreeze;
+
+require('./_object-sap')('freeze', function ($freeze) {
+  return function freeze(it) {
+    return $freeze && isObject(it) ? $freeze(meta(it)) : it;
+  };
+});
+
+},{"./_is-object":"node_modules/core-js/library/modules/_is-object.js","./_meta":"node_modules/core-js/library/modules/_meta.js","./_object-sap":"node_modules/core-js/library/modules/_object-sap.js"}],"node_modules/core-js/library/fn/object/freeze.js":[function(require,module,exports) {
+require('../../modules/es6.object.freeze');
+module.exports = require('../../modules/_core').Object.freeze;
+
+},{"../../modules/es6.object.freeze":"node_modules/core-js/library/modules/es6.object.freeze.js","../../modules/_core":"node_modules/core-js/library/modules/_core.js"}],"node_modules/babel-runtime/core-js/object/freeze.js":[function(require,module,exports) {
+module.exports = { "default": require("core-js/library/fn/object/freeze"), __esModule: true };
+},{"core-js/library/fn/object/freeze":"node_modules/core-js/library/fn/object/freeze.js"}],"node_modules/babel-runtime/helpers/taggedTemplateLiteral.js":[function(require,module,exports) {
+"use strict";
+
+exports.__esModule = true;
+
+var _defineProperties = require("../core-js/object/define-properties");
+
+var _defineProperties2 = _interopRequireDefault(_defineProperties);
+
+var _freeze = require("../core-js/object/freeze");
+
+var _freeze2 = _interopRequireDefault(_freeze);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = function (strings, raw) {
+  return (0, _freeze2.default)((0, _defineProperties2.default)(strings, {
+    raw: {
+      value: (0, _freeze2.default)(raw)
+    }
+  }));
+};
+},{"../core-js/object/define-properties":"node_modules/babel-runtime/core-js/object/define-properties.js","../core-js/object/freeze":"node_modules/babel-runtime/core-js/object/freeze.js"}],"node_modules/hyperapp/src/index.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -444,7 +930,7 @@ function app(state, actions, view, container) {
     return element;
   }
 }
-},{}],"node_modules/ld-components/index.js":[function(require,module,exports) {
+},{}],"ld-components.js":[function(require,module,exports) {
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -454,25 +940,46 @@ exports.app = exports.h = undefined;
 
 var _hyperapp = require('hyperapp');
 
-let _id = 0;
+var // 
+tmp = false,
+    _id = Math.floor(Math.random() * 1e6);
 
-const //
+var //
 cache = {},
-      sheet = document.head.appendChild(document.createElement("style")).sheet,
-      insert = rule => 1 + sheet.insertRule(rule, sheet.cssRules.length) && '',
-      // allways return ''
-isProp = str => /.*:.*;/.test(str),
-      isSelector = str => /^(&|:|>|\.|\*)/.test(str),
-      isClosingBracket = str => /\s?}\s?/.test(str),
-      isMediaQuery = str => /^@/.test(str),
-      createStyle = decls => {
-    let // 
+    sheet = document.head.appendChild(document.createElement("style")).sheet,
+    resetTmp = function resetTmp() {
+    return [(0, _hyperapp.h)(tmp.nodeName, tmp.attributes, tmp.children), tmp = false][0];
+},
+    insert = function insert(rule) {
+    return 1 + sheet.insertRule(rule, sheet.cssRules.length) && '';
+},
+    // allways return ''
+isProp = function isProp(str) {
+    return (/.*:.*;/.test(str)
+    );
+},
+    isSelector = function isSelector(str) {
+    return (/^(&|:|>|\.|\*)/.test(str)
+    );
+},
+    isClosingBracket = function isClosingBracket(str) {
+    return (/\s?}\s?/.test(str)
+    );
+},
+    isMediaQuery = function isMediaQuery(str) {
+    return (/^@/.test(str)
+    );
+},
+    createRule = function createRule(decls) {
+    var // 
     id = ".P" + _id++,
         i = 0,
         rule = '',
         endline = /;|}|{/g,
-        lines = decls.replace(endline, m => m + '|').split('|');
-    lines.map(line => {
+        lines = decls.replace(endline, function (m) {
+        return m + '|';
+    }).split('|');
+    lines.map(function (line) {
         line = line.trim();
         if (isProp(line)) {
             // eg: color: red;
@@ -493,120 +1000,221 @@ isProp = str => /.*:.*;/.test(str),
 
     return id.slice(1); // return id = P1
 },
-      picostyle = nodeName => decls => (attributes = {}, children = attributes.children) => {
-    let key = typeof decls == "function" ? decls(attributes) : decls.toString();
-    cache[key] || (cache[key] = createStyle(key));
-    attributes.class = [attributes.class, cache[key]].filter(Boolean).join(" ");
-    return (0, _hyperapp.h)(nodeName, attributes, children);
+    style = function style(nodeName) {
+    return function (decls) {
+        return function () {
+            var attributes = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+            var children = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : attributes.children;
+
+            if (tmp) return resetTmp();
+            var key = typeof decls == "function" ? decls(attributes) : decls.toString();
+            cache[key] || (cache[key] = createRule(key));
+            attributes.class = [attributes.class, cache[key]].filter(Boolean).join(" ");
+            if (typeof nodeName == 'function') {
+                tmp = nodeName(attributes, children);
+                tmp.attributes.class = attributes.class;
+                return typeof decls == 'function' && !nodeName.length ? style(tmp.nodeName) : resetTmp();
+            }
+            return (0, _hyperapp.h)(nodeName, attributes, children);
+        };
+    };
 };
 
-exports.default = new Proxy(picostyle, { // Proxy allows you to write 
-    //                                                          picostyle.div`...`
-    get: (target, key) => target(key) // instead of 
-    //                                                          picostyle('div')(`...`)                `
+exports.default = new Proxy(style, { // Proxy allows you to write 
+    //                                                          style.div`...`
+    get: function get(target, key) {
+        return target(key);
+    } // instead of 
+    //                                                          style('div')(`...`)                `
 });
 exports.h = _hyperapp.h;
 exports.app = _hyperapp.app;
 },{"hyperapp":"node_modules/hyperapp/src/index.js"}],"index.js":[function(require,module,exports) {
 'use strict';
 
-var _templateObject = _taggedTemplateLiteral(['\n    background: rgba(0,0,0,.2);\n    margin-left: -15px;\n    margin-right: -15px;\n    :before, &:after, & .bold {\n        display: table;\n        content: "";\n        clear: both;\n    }'], ['\n    background: rgba(0,0,0,.2);\n    margin-left: -15px;\n    margin-right: -15px;\n    :before, &:after, & .bold {\n        display: table;\n        content: "";\n        clear: both;\n    }']),
-    _templateObject2 = _taggedTemplateLiteral(['\n    color: red;\n    text-transform: uppercase;\n    :before, &:after {\n        content: "z";\n        color: blue;\n        font-size: 4em;\n    }\n    @media all and (max-width: 600px) {\n        text-decoration: underline;\n        font-style: italic;\n    }\n'], ['\n    color: red;\n    text-transform: uppercase;\n    :before, &:after {\n        content: "z";\n        color: blue;\n        font-size: 4em;\n    }\n    @media all and (max-width: 600px) {\n        text-decoration: underline;\n        font-style: italic;\n    }\n']);
+var _taggedTemplateLiteral2 = require('babel-runtime/helpers/taggedTemplateLiteral');
 
-var _ldComponents = require('ld-components');
+var _taggedTemplateLiteral3 = _interopRequireDefault(_taggedTemplateLiteral2);
+
+var _templateObject = (0, _taggedTemplateLiteral3.default)(['color: blue;'], ['color: blue;']),
+    _templateObject2 = (0, _taggedTemplateLiteral3.default)(['color: red;'], ['color: red;']),
+    _templateObject3 = (0, _taggedTemplateLiteral3.default)(['text-decoration: underline;'], ['text-decoration: underline;']);
+
+var _ldComponents = require('./ld-components');
 
 var _ldComponents2 = _interopRequireDefault(_ldComponents);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _taggedTemplateLiteral(strings, raw) { return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
 
 // export const Col = (props, children)=>{
 //     console.log(props)
 // }
 
 
-var Reperes = _ldComponents2.default.div(function (props) {
-    return '\n    box-sizing: border-box;\n\t-webkit-box-sizing: border-box;\n\t-moz-box-sizing: border-box;\n    ' + (props.visible ? '\n        & * {\n\t        border: 1px solid black;\n\t        background: rgba(0,0,0,.2);\n\t        padding-top: 5px;\n            padding-bottom: 5px;\n    }' : '') + '\n';
+// const Reperes = style.div(props => `
+//     box-sizing: border-box;
+// 	-webkit-box-sizing: border-box;
+// 	-moz-box-sizing: border-box;
+//     ${ props.visible ? `
+//         & * {
+// 	        border: 1px solid black;
+// 	        background: rgba(0,0,0,.2);
+// 	        padding-top: 5px;
+//             padding-bottom: 5px;
+//     }` : ''}
+// `);
+
+// const Row = style.div`
+//     background: rgba(0,0,0,.2);
+//     margin-left: -15px;
+//     margin-right: -15px;
+//     :before, &:after, & .bold {
+//         display: table;
+//         content: "";
+//         clear: both;
+//     }`;
+
+
+// const Col = style.div(
+//     props => {
+//         props.s = props.s || 12;
+//         props.m = props.m || props.s;
+//         props.l = props.l || props.m;
+//         props.offsetS = props.offsetS || 0;
+//         props.offsetM = props.offsetM || props.offsetS;
+//         props.offsetL = props.offsetL || props.offsetM;
+//         // return {
+//         //     paddingLeft: '15px',
+//         //     paddingRight: '15px',
+//         //     float: 'left',
+//         //     position: 'relative',
+//         //     "@media all and (min-width: 0px) and (max-width: 639px)": {
+//         //         width: `${100 / 12 * props.s}%`,
+//         //         marginLeft: `${100 / 12 * props.offsetS}%`
+//         //     },
+//         //     "@media all and (min-width: 640px) and (max-width: 991px)": {
+//         //         width: `${100 / 12 * props.m}%`,
+//         //         marginLeft: `${100 / 12 * props.offsetM}%`
+//         //     },
+//         //     "@media all and (min-width: 992px)": {
+//         //         width: `${100 / 12 * props.l}%`,
+//         //         marginLeft: `${100 / 12 * props.offsetL}%`
+//         //     }
+//         // }
+//         return `
+//             display: block;
+//             background: rgba(0,0,0,.4);
+//             padding-left: 15px;
+//             padding-right: 15px;
+//             float: left;
+//             position: relative;
+//             .bold{
+//                 color: #fff;
+//             }
+//             @media all and (min-width: 0px) and (max-width: 639px) {
+//                 width: ${100 / 12 * props.s}%;
+//                 margin-left: ${100 / 12 * props.offsetS}%;
+//             }
+//             @media all and (min-width: 640px) and (max-width: 991px) {
+//                 width: ${100 / 12 * props.m}%;
+//                 margin-left: ${100 / 12 * props.offsetM}%;
+//             }
+//             @media all and (min-width: 992px) {
+//                 width: ${100 / 12 * props.m}%;
+//                 margin-left: ${100 / 12 * props.offsetL}%;
+//             }
+//         `
+//     }
+// )
+
+// const Span = style('span')(`
+//     & .bold {
+//         font-weight: bold;
+//     }
+//     color: blue;
+//     background: red;
+//     text-transform: uppercase;
+
+// `);
+
+var Prox = _ldComponents2.default.div(_templateObject);
+
+var Prox2 = _ldComponents2.default.div(function (props) {
+    return 'color: ' + props.color + ';';
 });
 
-var Row = _ldComponents2.default.div(_templateObject);
-
-var Col = _ldComponents2.default.div(function (props) {
-    props.s = props.s || 12;
-    props.m = props.m || props.s;
-    props.l = props.l || props.m;
-    props.offsetS = props.offsetS || 0;
-    props.offsetM = props.offsetM || props.offsetS;
-    props.offsetL = props.offsetL || props.offsetM;
-    // return {
-    //     paddingLeft: '15px',
-    //     paddingRight: '15px',
-    //     float: 'left',
-    //     position: 'relative',
-    //     "@media all and (min-width: 0px) and (max-width: 639px)": {
-    //         width: `${100 / 12 * props.s}%`,
-    //         marginLeft: `${100 / 12 * props.offsetS}%`
-    //     },
-    //     "@media all and (min-width: 640px) and (max-width: 991px)": {
-    //         width: `${100 / 12 * props.m}%`,
-    //         marginLeft: `${100 / 12 * props.offsetM}%`
-    //     },
-    //     "@media all and (min-width: 992px)": {
-    //         width: `${100 / 12 * props.l}%`,
-    //         marginLeft: `${100 / 12 * props.offsetL}%`
-    //     }
-    // }
-    return '\n            display: block;\n            background: rgba(0,0,0,.4);\n            padding-left: 15px;\n            padding-right: 15px;\n            float: left;\n            position: relative;\n            .bold{\n                color: #fff;\n            }\n            @media all and (min-width: 0px) and (max-width: 639px) {\n                width: ' + 100 / 12 * props.s + '%;\n                margin-left: ' + 100 / 12 * props.offsetS + '%;\n            }\n            @media all and (min-width: 640px) and (max-width: 991px) {\n                width: ' + 100 / 12 * props.m + '%;\n                margin-left: ' + 100 / 12 * props.offsetM + '%;\n            }\n            @media all and (min-width: 992px) {\n                width: ' + 100 / 12 * props.m + '%;\n                margin-left: ' + 100 / 12 * props.offsetL + '%;\n            }\n        ';
+var Func = (0, _ldComponents2.default)(function (props, children) {
+    return (0, _ldComponents.h)(
+        'div',
+        { color: props.color },
+        children
+    );
+})(function (props) {
+    return 'color: ' + (props.color || 'red') + ';';
 });
 
-var Span = (0, _ldComponents2.default)('span')('\n    & .bold {\n        font-weight: bold;\n    }\n    color: blue;\n    background: red;\n    text-transform: uppercase;\n    \n');
+var Func2 = (0, _ldComponents2.default)(function (props, children) {
+    return (0, _ldComponents.h)(
+        'div',
+        null,
+        children
+    );
+})(_templateObject2);
+
+var Inherit = (0, _ldComponents2.default)(Func2)(_templateObject3);
 
 var // 
 state = {},
     actions = {},
-    Test = _ldComponents2.default.div(_templateObject2),
-    view = function view(state, actions) {
+
+//     Test = style.div`
+//     color: red;
+//     text-transform: uppercase;
+//     :before, &:after {
+//         content: "z";
+//         color: blue;
+//         font-size: 4em;
+//     }
+//     @media all and (max-width: 600px) {
+//         text-decoration: underline;
+//         font-style: italic;
+//     }
+// `,
+
+view = function view(state, actions) {
     return (0, _ldComponents.h)(
-        Reperes,
-        { visible: true },
+        'div',
+        null,
         (0, _ldComponents.h)(
-            Row,
+            Func2,
             null,
-            (0, _ldComponents.h)(
-                Col,
-                { s: '3', m: '4', l: '6' },
-                (0, _ldComponents.h)(
-                    Span,
-                    null,
-                    'hello'
-                )
-            ),
-            (0, _ldComponents.h)(
-                Col,
-                { s: '3', m: '4', l: '4' },
-                (0, _ldComponents.h)(
-                    Span,
-                    { 'class': 'bold' },
-                    'world'
-                )
-            ),
-            (0, _ldComponents.h)(
-                Col,
-                { s: '3', m: '4', l: '3' },
-                (0, _ldComponents.h)(
-                    Span,
-                    null,
-                    '!!!'
-                ),
-                (0, _ldComponents.h)(Test, null)
-            )
+            'I am red'
+        ),
+        (0, _ldComponents.h)(
+            Prox,
+            null,
+            'I am blue'
+        ),
+        (0, _ldComponents.h)(
+            Prox2,
+            { color: 'teal' },
+            'I am teal'
+        ),
+        (0, _ldComponents.h)(
+            Func,
+            { color: 'green' },
+            'I am green'
+        ),
+        (0, _ldComponents.h)(
+            Inherit,
+            null,
+            'I am red too, but underlined'
         )
     );
 };
 
 (0, _ldComponents.app)(state, actions, view, document.body);
-},{"ld-components":"node_modules/ld-components/index.js"}],"../../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"babel-runtime/helpers/taggedTemplateLiteral":"node_modules/babel-runtime/helpers/taggedTemplateLiteral.js","./ld-components":"ld-components.js"}],"../../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 
@@ -635,7 +1243,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '42389' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '33121' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
