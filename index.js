@@ -42,28 +42,23 @@ const //
     },
 
     style = nodeName => decls => (attributes = {}, children = attributes.children) => {
-        if (tmp)
-            return resetTmp();
+        if (tmp) return resetTmp();
         let key = typeof decls == "function" ? decls(attributes) : decls.toString();
         cache[key] || (cache[key] = createRule(key));
         attributes.class = [attributes.class, cache[key]]
             .filter(Boolean)
             .join(" ")
-        if (typeof nodeName == 'function') {
-            tmp = nodeName(attributes, children);
-            tmp.attributes.class = attributes.class;
-            return (typeof decls == 'function' && !nodeName.length) ? style(tmp.nodeName) : resetTmp();
-        }
-        return h(nodeName, attributes, children);
-
+        if (typeof nodeName != 'function')
+            return h(nodeName, attributes, children);
+        tmp = nodeName(attributes, children);
+        tmp.attributes.class = attributes.class;
+        return (typeof decls == 'function' && !nodeName.length) ? style(tmp.nodeName) : resetTmp();
     };
 
 export default new Proxy(style, {                   // Proxy allows you to write 
     //                                                          style.div`...`
-    get: (target, key) => target(key)                   // instead of 
+    get: (target, key) => target(key)               // instead of 
     //                                                          style('div')(`...`)                `
 });
 
 export { h, app };
-
-
