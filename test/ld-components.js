@@ -10,7 +10,7 @@ const //
     resetTmp = () => [h(tmp.nodeName, tmp.attributes, tmp.children), tmp = false][0],
     insert = rule => 1 + sheet.insertRule(rule, sheet.cssRules.length) && '',           // allways return ''
     isProp = str => /.*:.*;/.test(str),
-    isSelector = str => /^(&|:|>|\.|\*)/.test(str),
+    isSelector = str => /^(&|:|>|\.|\*|\[)/.test(str),
     isClosingBracket = str => /\s?}\s?/.test(str),
     isMediaQuery = str => /^@/.test(str),
     createRule = decls => {
