@@ -13,8 +13,9 @@ const //
     isSelector = str => /^(&|:|>|\.|\*|\[)/.test(str),
     isClosingBracket = str => /\s?}\s?/.test(str),
     isMediaQuery = str => /^@/.test(str),
-    createRule = decls => {
-        let // 
+    createRule = (decls, isScss = false) => {
+        let //
+            parentSelector = isScss ? '._this' : '&',
             id = ".P" + _id++,
             i = 0,
             rule = '',
@@ -29,7 +30,7 @@ const //
                     rule = insert(rule + '}');                                          // insert(rule = '.P1{ color: red;}')
                 //                                                                         =================================
                 if (isSelector(line))                                                   // eg: :before, &:after, & .bold {
-                    rule += id + line.replace(/^&/g, '').replace(/&/g, id)              // rule = '.P1:before, .P1:after, .P1 .bold {'
+                    rule += id + line.replace(new RegExp(parentSelector, 'g'), id)      // rule = '.P1:before, .P1:after, .P1 .bold {'
                 //                                                                         ====================================
                 else if (isMediaQuery(line) && !!!(i = 0))                              // eg: @media (...) {
                     rule += line;                                                       // no change but new loop ( i == 0 )
@@ -43,8 +44,9 @@ const //
 
     style = nodeName => decls => (attributes = {}, children = attributes.children) => {
         if (tmp) return resetTmp();
+        let isScss = typeof decls == 'string';
         let key = typeof decls == "function" ? decls(attributes) : decls.toString();
-        cache[key] || (cache[key] = createRule(key));
+        cache[key] || (cache[key] = createRule(key, isScss));
         attributes.class = [attributes.class, cache[key]]
             .filter(Boolean)
             .join(" ")
@@ -62,3 +64,4 @@ export default new Proxy(style, {                   // Proxy allows you to write
 });
 
 export { h, app };
+

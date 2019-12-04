@@ -2,7 +2,7 @@
   "name": "ld-components",
   "version": "0.0.4",
   "description": "a small web-components library, intended to be used with \"hyperapp\" micro-framework and \"picostyle\" css-in-js lib",
-  "main": "index.js",
+  "main": "dist/index.min.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
