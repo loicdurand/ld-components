@@ -10,7 +10,7 @@ const //
     resetTmp = () => [h(tmp.nodeName, tmp.attributes, tmp.children), tmp = false][0],
     insert = rule => 1 + sheet.insertRule(rule, sheet.cssRules.length) && '',           // allways return ''
     isProp = str => /.*:.*;/.test(str),
-    isSelector = str => /^(&|:|>|\.|\*|\[)/.test(str),
+    isSelector = str => /^(&|:|>|\.|\*|\[|this)/.test(str),
     isClosingBracket = str => /\s?}\s?/.test(str),
     isMediaQuery = str => /^@/.test(str),
     createRule = (decls, isScss = false) => {
@@ -30,7 +30,7 @@ const //
                     rule = insert(rule + '}');                                          // insert(rule = '.P1{ color: red;}')
                 //                                                                         =================================
                 if (isSelector(line))                                                   // eg: :before, &:after, & .bold {
-                    rule += id + line.replace(new RegExp(parentSelector, 'g'), id)      // rule = '.P1:before, .P1:after, .P1 .bold {'
+                    rule += id + line.replace(new RegExp(parentSelector, 'g'), '')      // rule = '.P1:before, .P1:after, .P1 .bold {'
                 //                                                                         ====================================
                 else if (isMediaQuery(line) && !!!(i = 0))                              // eg: @media (...) {
                     rule += line;                                                       // no change but new loop ( i == 0 )
