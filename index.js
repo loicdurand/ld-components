@@ -42,7 +42,7 @@ const //
         return id.slice(1);                                                             // return id = P1
     },
 
-    style = nodeName => decls => (attributes = {}, children = attributes.children) => {
+    styleElt = nodeName => decls => (attributes = {}, children = attributes.children) => {
         if (tmp) return resetTmp();
         let isScss = typeof decls == 'string';
         let key = typeof decls == "function" ? decls(attributes) : decls.toString();
@@ -57,12 +57,44 @@ const //
         return (typeof decls == 'function' && !nodeName.length) ? style(tmp.nodeName) : resetTmp();
     };
 
-export default new Proxy(style, {                   // Proxy allows you to write 
+export default new Proxy(styleElt, {                   // Proxy allows you to write 
     //                                                          style.div`...`
-    get: (target, key) => target(key)               // instead of 
-    //                                                          style('div')(`...`)                `
+    get: (target, key) => target(key),               // instead of 
+    //                                                          style('div')(`...`)  
 });
 
 export { h, app };
 
+export const assoc = collection => decls => {
+    let // 
+        style = document.createElement("style"),
+        refs = {},
+        id = 'P' + _id++,
+        css = decls.toString(),
+        Collection = typeof collection == 'object' ? ($this) => collection : collection,
+        output = {};
+    for (let cpnt in Collection(output)) {
+        id = 'P' + _id++;
+        css = css.replace(new RegExp('[^\da-zA-Z#\.]' + cpnt + '{1}[^\da-zA-Z]', 'gm'), m => m.replace(new RegExp(cpnt), '.' + id));
+        refs[cpnt] = id;
+
+        output[cpnt] = (attributes = {}, children = attributes.children) => {
+            const //
+                props = attributes,
+                elt = Collection(output)[cpnt](props, children);
+            for (let prop in props)
+                elt.attributes[prop] = props[prop];
+            elt.attributes.class = [elt.attributes.class, refs[cpnt]]
+                .filter(Boolean)
+                .join(" ");
+            return h(elt.nodeName, elt.attributes, elt.children);
+        }
+    }
+
+    style.type = "text/css";
+    style.rel = "stylesheet";
+    style.innerText = css;
+    document.head.appendChild(style);
+    return output;
+}
 
