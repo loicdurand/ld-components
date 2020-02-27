@@ -81,7 +81,7 @@ export const assoc = collection => decls => {
         output[cpnt] = (attributes = {}, children = attributes.children) => {
             const //
                 props = attributes,
-                elt = Collection(output)[cpnt](props, children);
+                elt = typeof Collection(output)[cpnt] == 'string' ? h(Collection(output)[cpnt], attributes, children) : Collection(output)[cpnt](props, children);
             for (let prop in props)
                 elt.attributes[prop] = props[prop];
             elt.attributes.class = [elt.attributes.class, refs[cpnt]]
