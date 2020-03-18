@@ -66,51 +66,41 @@ export default new Proxy(styleElt, {                   // Proxy allows you to wr
 export { h, app };
 
 export const assoc = collection => decls => {
+
+    const //
+        refs = (typeof decls == 'object') ? decls : {},
+        Collection = typeof collection == 'object' ? ($this) => collection : collection,
+        output = {},
+        mergeClasses = cpnt => (attributes = {}, children = attributes.children) => {
+            const // 
+                nodeName = Collection(output)[cpnt],
+                elt = typeof nodeName == 'string' ? h(nodeName, attributes, children) : nodeName(props, children);
+            for (let prop in attributes)
+                elt.attributes[prop] = attributes[prop];
+            elt.attributes.class = [elt.attributes.class, refs[cpnt]]
+                .filter(Boolean)
+                .join(" ");
+            return h(elt.nodeName, elt.attributes, elt.children);
+        };
+
+    // if you don't pre-build your components using my own "ld-bundler" library, skip directly to the ELSE statement
     if (typeof decls == 'object') {
-        const // 
-            refs = decls,
-            Collection = typeof collection == 'object' ? ($this) => collection : collection,
-            output = {};
-        for (let cpnt in Collection(output)) {
-            output[cpnt] = (attributes = {}, children = attributes.children) => {
-                const //
-                    props = attributes,
-                    elt = typeof Collection(output)[cpnt] == 'string' ? h(Collection(output)[cpnt], attributes, children) : Collection(output)[cpnt](props, children);
-                for (let prop in props)
-                    elt.attributes[prop] = props[prop];
-                elt.attributes.class = [elt.attributes.class, refs[cpnt]]
-                    .filter(Boolean)
-                    .join(" ");
-                return h(elt.nodeName, elt.attributes, elt.children);
-            }
-        }
+        for (let cpnt in Collection(output))
+            output[cpnt] = mergeClasses(cpnt);
 
         return output;
 
     } else {
         let // 
+            cpntRE = cpnt => new RegExp('[^\da-zA-Z#\.]' + cpnt + '{1}[^\da-zA-Z]', 'gm'),
             style = document.createElement("style"),
-            refs = {},
             id = 'P' + _id++,
-            css = decls.toString(),
-            Collection = typeof collection == 'object' ? ($this) => collection : collection,
-            output = {};
+            css = decls.toString();
         for (let cpnt in Collection(output)) {
             id = 'P' + _id++;
-            css = css.replace(new RegExp('[^\da-zA-Z#\.]' + cpnt + '{1}[^\da-zA-Z]', 'gm'), m => m.replace(new RegExp(cpnt), '.' + id));
+            css = css.replace(cpntRE(cpnt), m => m.replace(new RegExp(cpnt), '.' + id));
             refs[cpnt] = id;
-
-            output[cpnt] = (attributes = {}, children = attributes.children) => {
-                const //
-                    props = attributes,
-                    elt = typeof Collection(output)[cpnt] == 'string' ? h(Collection(output)[cpnt], attributes, children) : Collection(output)[cpnt](props, children);
-                for (let prop in props)
-                    elt.attributes[prop] = props[prop];
-                elt.attributes.class = [elt.attributes.class, refs[cpnt]]
-                    .filter(Boolean)
-                    .join(" ");
-                return h(elt.nodeName, elt.attributes, elt.children);
-            }
+            output[cpnt] = mergeClasses(cpnt);
         }
 
         style.type = "text/css";
