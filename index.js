@@ -74,7 +74,7 @@ export const assoc = collection => decls => {
         mergeClasses = cpnt => (attributes = {}, children = attributes.children) => {
             const // 
                 nodeName = Collection(output)[cpnt],
-                elt = typeof nodeName == 'string' ? h(nodeName, attributes, children) : nodeName(props, children);
+                elt = typeof nodeName == 'string' ? h(nodeName, attributes, children) : nodeName(attributes, children);
             for (let prop in attributes)
                 elt.attributes[prop] = attributes[prop];
             elt.attributes.class = [elt.attributes.class, refs[cpnt]]
