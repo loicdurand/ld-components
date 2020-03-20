@@ -14,30 +14,34 @@ const //
     isClosingBracket = str => /\s?}\s?/.test(str),
     isMediaQuery = str => /^@/.test(str),
     createRule = (decls, isScss = false) => {
-        let //
-            parentSelector = isScss ? '\.?this' : '&',
-            id = ".P" + _id++,
-            i = 0,
-            rule = '',
-            endline = /;|}|{/g,
-            lines = decls.replace(endline, m => m + '|').split('|');
-        lines.map(line => {
-            line = line.trim();
-            if (isProp(line)) {                                                         // eg: color: red;
-                rule += (i++ == 0 ? id + '{' + line : line);                            // rule = '.P1{ color: red;'
-            } else if (!isClosingBracket(line)) {
-                if (i++ != 0)
-                    rule = insert(rule + '}');                                          // insert(rule = '.P1{ color: red;}')
-                //                                                                         =================================
-                if (isSelector(line))                                                   // eg: :before, &:after, & .bold {
-                    rule += id + line.replace(new RegExp(parentSelector, 'g'), isScss ? '' : id);     // rule = '.P1:before, .P1:after, .P1 .bold {'
-                //                                                                         ====================================
-                else if (isMediaQuery(line) && !!!(i = 0))                              // eg: @media (...) {
-                    rule += line;                                                       // no change but new loop ( i == 0 )
-            } else {                                                                    // then
-                i = !!(rule = insert(rule + ('@' == rule.charAt(0) ? '}}' : '}')));     // insert(@media(...){ .P1{ color: red;} })
-            }
-        });
+
+        let id = ".P" + _id++;
+        
+        requestAnimationFrame(() => {
+            let //
+                parentSelector = isScss ? '\.?this' : '&',
+                i = 0,
+                rule = '',
+                endline = /;|}|{/g,
+                lines = decls.replace(endline, m => m + '|').split('|');
+            lines.map(line => {
+                line = line.trim();
+                if (isProp(line)) {                                                         // eg: color: red;
+                    rule += (i++ == 0 ? id + '{' + line : line);                            // rule = '.P1{ color: red;'
+                } else if (!isClosingBracket(line)) {
+                    if (i++ != 0)
+                        rule = insert(rule + '}');                                          // insert(rule = '.P1{ color: red;}')
+                    //                                                                         =================================
+                    if (isSelector(line))                                                   // eg: :before, &:after, & .bold {
+                        rule += id + line.replace(new RegExp(parentSelector, 'g'), isScss ? '' : id);     // rule = '.P1:before, .P1:after, .P1 .bold {'
+                    //                                                                         ====================================
+                    else if (isMediaQuery(line) && !!!(i = 0))                              // eg: @media (...) {
+                        rule += line;                                                       // no change but new loop ( i == 0 )
+                } else {                                                                    // then
+                    i = !!(rule = insert(rule + ('@' == rule.charAt(0) ? '}}' : '}')));     // insert(@media(...){ .P1{ color: red;} })
+                }
+            });
+        })
 
         return id.slice(1);                                                             // return id = P1
     },
