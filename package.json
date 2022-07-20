@@ -1,7 +1,7 @@
 {
   "name": "ld-components",
   "version": "0.0.4",
-  "description": "a small web-components library, intended to style those created using \"hyperapp\" micro-framework",
+  "description": "a small web-components micro-framework, intended to create, style ans use components for your app",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -16,8 +16,6 @@
     "url": "https://github.com/loicdurand/ld-components/issues"
   },
   "homepage": "https://github.com/loicdurand/ld-components#readme",
-  "dependencies": {
-    "hyperapp": "^1.2.9"
-  },
+  "dependencies": {},
   "devDependencies": {}
 }

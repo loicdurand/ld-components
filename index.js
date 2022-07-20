@@ -1,4 +1,4 @@
-import { h, app } from 'hyperapp';
+import { h, app } from './hypercopy';
 
 let _id = Math.floor(Math.random() * 1e4);
 
