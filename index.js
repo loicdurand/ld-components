@@ -16,7 +16,7 @@ const //
     createRule = (decls, isScss = false) => {
 
         let id = ".P" + _id++;
-        
+
         requestAnimationFrame(() => {
             let //
                 parentSelector = isScss ? '\.?this' : '&',
@@ -45,6 +45,53 @@ const //
 
         return id.slice(1);                                                             // return id = P1
     },
+    
+    assoc = collection => decls => {
+
+        const //
+            refs = (typeof decls == 'object') ? decls : {},
+            Collection = typeof collection == 'object' ? ($this) => collection : collection,
+            output = {},
+            mergeClasses = cpnt => (attributes = {}, children = attributes.children) => {
+                const // 
+                    nodeName = Collection(output)[cpnt],
+                    elt = typeof nodeName == 'string' ? h(nodeName, attributes, children) : nodeName(attributes, children);
+                for (let prop in attributes)
+                    elt.attributes[prop] = attributes[prop];
+                elt.attributes.class = [elt.attributes.class, refs[cpnt]]
+                    .filter(Boolean)
+                    .join(" ");
+                return h(elt.nodeName, elt.attributes, elt.children);
+            };
+    
+        // if you don't pre-build your components using my own "ld-bundler" library, skip directly to the ELSE statement
+        if (typeof decls == 'object') {
+            for (let cpnt in Collection(output))
+                output[cpnt] = mergeClasses(cpnt);
+    
+            return output;
+    
+        } else {
+            let // 
+                cpntRE = cpnt => new RegExp(cpnt + '|[^\da-zA-Z#\.]' + cpnt + '{1}[^\da-zA-Z]', 'gm'),
+                style = document.createElement("style"),
+                id = 'P' + _id++,
+                css = decls.toString();
+            for (let cpnt in Collection(output)) {
+                id = 'P' + _id++;
+                css = css.replace(cpntRE(cpnt), m => m.replace(new RegExp(cpnt), '.' + id));
+                refs[cpnt] = id;
+                output[cpnt] = mergeClasses(cpnt);
+            }
+    
+            style.type = "text/css";
+            style.rel = "stylesheet";
+            style.innerText = css;
+            document.head.appendChild(style);
+            return output;
+    
+        }
+    },
 
     styleElt = nodeName => decls => (attributes = {}, children = attributes.children) => {
         if (tmp) return resetTmp();
@@ -69,50 +116,5 @@ export default new Proxy(styleElt, {                   // Proxy allows you to wr
 
 export { h, app };
 
-export const assoc = collection => decls => {
-
-    const //
-        refs = (typeof decls == 'object') ? decls : {},
-        Collection = typeof collection == 'object' ? ($this) => collection : collection,
-        output = {},
-        mergeClasses = cpnt => (attributes = {}, children = attributes.children) => {
-            const // 
-                nodeName = Collection(output)[cpnt],
-                elt = typeof nodeName == 'string' ? h(nodeName, attributes, children) : nodeName(attributes, children);
-            for (let prop in attributes)
-                elt.attributes[prop] = attributes[prop];
-            elt.attributes.class = [elt.attributes.class, refs[cpnt]]
-                .filter(Boolean)
-                .join(" ");
-            return h(elt.nodeName, elt.attributes, elt.children);
-        };
-
-    // if you don't pre-build your components using my own "ld-bundler" library, skip directly to the ELSE statement
-    if (typeof decls == 'object') {
-        for (let cpnt in Collection(output))
-            output[cpnt] = mergeClasses(cpnt);
-
-        return output;
-
-    } else {
-        let // 
-            cpntRE = cpnt => new RegExp('[^\da-zA-Z#\.]' + cpnt + '{1}[^\da-zA-Z]', 'gm'),
-            style = document.createElement("style"),
-            id = 'P' + _id++,
-            css = decls.toString();
-        for (let cpnt in Collection(output)) {
-            id = 'P' + _id++;
-            css = css.replace(cpntRE(cpnt), m => m.replace(new RegExp(cpnt), '.' + id));
-            refs[cpnt] = id;
-            output[cpnt] = mergeClasses(cpnt);
-        }
-
-        style.type = "text/css";
-        style.rel = "stylesheet";
-        style.innerText = css;
-        document.head.appendChild(style);
-        return output;
-
-    }
-}
+export const associate = ({ stylesheet, ...Collection }) => assoc(Collection)(stylesheet);
 
