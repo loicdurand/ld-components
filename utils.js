@@ -1,7 +1,5 @@
 export const // 
 
-    clone = (target, source) => ({ ...target, ...source }),
-
     updateAttribute = (element, name, value, isSvg) => {
 
         const eventListener = (event) => event.currentTarget.events[event.type](event);
@@ -39,16 +37,6 @@ export const //
 
     },
 
-    recycleElement = (element) => ({
-        nodeName: element.nodeName.toLowerCase(),
-        attributes: {},
-        children: element.childNodes.map(element => {
-            return element.nodeType === 3 // Node.TEXT_NODE
-                ? element.nodeValue
-                : recycleElement(element)
-        })
-    }),
-
     resolveNode = (node, state, actions) => {
         return typeof node === "function"
             ? resolveNode(node(state, actions))
@@ -77,4 +65,37 @@ export const //
         }
 
         return actions;
+    },
+
+    createElement = (node, state, actions, lifecycle = []) => {
+        let // 
+            isSvg = false,
+            element;
+        if (typeof node === "string" || typeof node === "number")
+            element = document.createTextNode(node);
+        else if (node.nodeName === "svg") {
+            element = document.createElementNS("http://www.w3.org/2000/svg", 'svg');
+            isSvg = true;
+        } else {
+            element = document.createElement(node.nodeName);
+
+            const { attributes, children } = node;
+            if (attributes) {
+
+                children.forEach(child => {
+                    const { element: newElement } = createElement(resolveNode(child, state, actions), state, actions, lifecycle);
+                    element.appendChild(newElement);
+                });
+
+                for (let name in attributes) {
+                    if (name === 'oncreate')
+                        lifecycle.push(() => attributes.oncreate(element))
+                    else
+                        updateAttribute(element, name, attributes[name], isSvg);
+                }
+            }
+        }
+
+        return { element, lifecycle };
     };
+
