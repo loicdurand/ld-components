@@ -1,366 +1,91 @@
-export function h(name, attributes, ...nodes) {
+import {
+  clone, updateAttribute, recycleElement, resolveNode, wireStateToActions
+} from './utils';
 
-  const children = nodes.flat();
 
-  if (typeof name === "function")
-    return name(attributes || {}, children);
+export const //
 
-  return {
-    nodeName: name,
-    attributes: attributes || {},
-    children,
-    key: attributes && attributes.key
-  };
+  h = (name, attributes, ...nodes) => {
 
-}
+    const children = nodes.flat();
 
-export function app(state, actions, view, container) {
+    if (typeof name === "function")
+      return name(attributes || {}, children);
 
-  let // 
-    skipRender,
-    isRecycling = true,
-    rootElement = (container && container.children[0]) || null,
-    oldNode = rootElement && recycleElement(rootElement),
-    globalState = clone(state);
-
-  const //
-    lifecycle = [],
-    wiredActions = wireStateToActions([], globalState, clone(actions));
-
-  scheduleRender();
-
-  return wiredActions
-
-  function recycleElement(element) {
     return {
-      nodeName: element.nodeName.toLowerCase(),
-      attributes: {},
-      children: element.childNodes.map(element => {
-        return element.nodeType === 3 // Node.TEXT_NODE
-          ? element.nodeValue
-          : recycleElement(element)
-      })
+      nodeName: name,
+      attributes: attributes || {},
+      children,
+      key: attributes && attributes.key
     };
-  }
 
-  function resolveNode(node) {
-    return typeof node === "function"
-      ? resolveNode(node(globalState, wiredActions))
-      : node != null
-        ? node
-        : ""
-  }
+  },
 
-  function render() {
-    skipRender = !skipRender
+  app = (state, actions, view, container) => {
 
-    const node = resolveNode(view)
+    let // 
+      skipRender,
+      isRecycling = true,
+      rootElement = (container && container.children[0]) || null;
 
-    if (container && !skipRender) {
-      rootElement = patch(container, rootElement, oldNode, (oldNode = node))
+    const //
+      lifecycle = [],
+      globalState = clone(state),
+      wiredActions = wireStateToActions(globalState, clone(actions));
+
+    scheduleRender();
+
+    return wiredActions;
+
+    function render() {
+      skipRender = !skipRender;
+
+      const //
+        patch = (parent, node) => parent.insertBefore(createElement(node), null),
+        node = resolveNode(view, globalState, wiredActions);
+
+      if (container && !skipRender)
+        rootElement = patch(container, node);
+
+      isRecycling = false;
+
+      lifecycle.forEach(cycle => cycle());
     }
 
-    isRecycling = false
-
-    lifecycle.forEach(cycle => cycle());
-  }
-
-  function scheduleRender() {
-    if (!skipRender) {
-      skipRender = true
-      setTimeout(render)
-    }
-  }
-
-  function clone(target, source) {
-    return { ...target, ...source };
-  }
-
-  function getPartialState(path, source) {
-    let i = 0
-    while (i < path.length) {
-      source = source[path[i++]]
-    }
-    return source
-  }
-
-  function wireStateToActions(path, state, actions) {
-
-    for (let action in actions) {
-      if (typeof actions[action] !== "function")
-        continue; // les actions ne peuvent être QUE des fonctions
-
-      const fn = actions[action];
-      actions[action] = data => {
-
-        let result = fn(data);
-
-        if (typeof result === "function")
-          result = result(getPartialState(path, globalState), actions);
-
-        return result;
-      }
-
-    }
-
-    return actions;
-  }
-
-  function getKey(node) {
-    return node ? node.key : null
-  }
-
-  function eventListener(event) {
-    return event.currentTarget.events[event.type](event)
-  }
-
-  function updateAttribute(element, name, value, oldValue, isSvg) {
-    if (name === "key")
-      return;
-
-    if (name === "style") {
-      if (typeof value === "string") {
-        element.style.cssText = value
-      } else {
-        if (typeof oldValue === "string") oldValue = element.style.cssText = ""
-        for (let i in clone(oldValue, value)) {
-          const style = value == null || value[i] == null ? "" : value[i]
-          if (i[0] === "-") {
-            element.style.setProperty(i, style)
-          } else {
-            element.style[i] = style
-          }
-        }
-      }
-    } else {
-      if (name[0] === "o" && name[1] === "n") {
-        name = name.slice(2)
-
-        if (element.events) {
-          if (!oldValue) oldValue = element.events[name]
-        } else {
-          element.events = {}
-        }
-
-        element.events[name] = value
-
-        if (value) {
-          if (!oldValue) {
-            element.addEventListener(name, eventListener)
-          }
-        } else {
-          element.removeEventListener(name, eventListener)
-        }
-      } else if (
-        name in element &&
-        name !== "list" &&
-        name !== "type" &&
-        name !== "draggable" &&
-        name !== "spellcheck" &&
-        name !== "translate" &&
-        !isSvg
-      ) {
-        element[name] = value == null ? "" : value
-      } else if (value != null && value !== false) {
-        element.setAttribute(name, value)
-      }
-
-      if (value == null || value === false) {
-        element.removeAttribute(name)
-      }
-    }
-  }
-
-  function createElement(node, isSvg) {
-    const element =
-      typeof node === "string" || typeof node === "number"
-        ? document.createTextNode(node)
-        : (isSvg = isSvg || node.nodeName === "svg")
-          ? document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            node.nodeName
-          )
-          : document.createElement(node.nodeName)
-
-    const attributes = node.attributes
-    if (attributes) {
-      if (attributes.oncreate) {
-        lifecycle.push(() => {
-          attributes.oncreate(element)
-        })
-      }
-
-      for (let i = 0; i < node.children.length; i++) {
-        element.appendChild(
-          createElement(
-            (node.children[i] = resolveNode(node.children[i])),
-            isSvg
-          )
-        )
-      }
-
-      for (let name in attributes) {
-        updateAttribute(element, name, attributes[name], null, isSvg)
+    function scheduleRender() {
+      if (!skipRender) {
+        skipRender = true;
+        requestAnimationFrame(render);
       }
     }
 
-    return element
-  }
-
-  function updateElement(element, oldAttributes, attributes, isSvg) {
-    for (let name in clone(oldAttributes, attributes)) {
-      if (
-        attributes[name] !==
-        (name === "value" || name === "checked"
-          ? element[name]
-          : oldAttributes[name])
-      ) {
-        updateAttribute(
-          element,
-          name,
-          attributes[name],
-          oldAttributes[name],
-          isSvg
-        )
-      }
-    }
-
-    const cb = isRecycling ? attributes.oncreate : attributes.onupdate
-    if (cb) {
-      lifecycle.push(() => {
-        cb(element, oldAttributes)
-      })
-    }
-  }
-
-  function removeChildren(element, node) {
-    const attributes = node.attributes
-    if (attributes) {
-      for (let i = 0; i < node.children.length; i++) {
-        removeChildren(element.childNodes[i], node.children[i])
-      }
-
-      if (attributes.ondestroy) {
-        attributes.ondestroy(element)
-      }
-    }
-    return element
-  }
-
-  function removeElement(parent, element, node) {
-    const // 
-      done = () => {
-        parent.removeChild(removeChildren(element, node))
-      },
-      cb = node.attributes && node.attributes.onremove;
-    if (cb) {
-      cb(element, done);
-    } else {
-      done();
-    }
-  }
-
-  function patch(parent, element, oldNode, node, isSvg) {
-    if (node === oldNode) {
-    } else if (oldNode == null || oldNode.nodeName !== node.nodeName) {
-      const newElement = createElement(node, isSvg)
-      parent.insertBefore(newElement, element)
-
-      if (oldNode != null) {
-        removeElement(parent, element, oldNode)
-      }
-
-      element = newElement
-    } else if (oldNode.nodeName == null) {
-      element.nodeValue = node
-    } else {
-      updateElement(
-        element,
-        oldNode.attributes,
-        node.attributes,
-        (isSvg = isSvg || node.nodeName === "svg")
-      )
-
-      const // 
-        oldKeyed = {},
-        newKeyed = {},
-        oldElements = [],
-        oldChildren = oldNode.children,
-        children = node.children;
-
-      for (let i = 0; i < oldChildren.length; i++) {
-        oldElements[i] = element.childNodes[i]
-
-        const oldKey = getKey(oldChildren[i])
-        if (oldKey != null) {
-          oldKeyed[oldKey] = [oldElements[i], oldChildren[i]]
-        }
-      }
-
+    function createElement(node) {
       let // 
-        i = 0,
-        k = 0;
+        isSvg = false,
+        element;
+      if (typeof node === "string" || typeof node === "number")
+        element = document.createTextNode(node);
+      else if (node.nodeName === "svg") {
+        element = document.createElementNS("http://www.w3.org/2000/svg", 'svg');
+        isSvg = true;
+      } else
+        element = document.createElement(node.nodeName);
 
-      while (k < children.length) {
-        const // 
-          oldKey = getKey(oldChildren[i]),
-          newKey = getKey((children[k] = resolveNode(children[k])));
+      const { attributes, children } = node;
+      if (attributes) {
+        if (attributes.oncreate)
+          lifecycle.push(() => attributes.oncreate(element));
 
-        if (newKeyed[oldKey]) {
-          i++
-          continue
-        }
+        children.forEach(child => element.appendChild(
+          createElement(resolveNode(child, globalState, wiredActions))
+        ));
 
-        if (newKey != null && newKey === getKey(oldChildren[i + 1])) {
-          if (oldKey == null) {
-            removeElement(element, oldElements[i], oldChildren[i])
-          }
-          i++
-          continue
-        }
+        for (let name in attributes)
+          updateAttribute(element, name, attributes[name], isSvg);
 
-        if (newKey == null || isRecycling) {
-          if (oldKey == null) {
-            patch(element, oldElements[i], oldChildren[i], children[k], isSvg)
-            k++
-          }
-          i++
-        } else {
-          const keyedNode = oldKeyed[newKey] || []
-
-          if (oldKey === newKey) {
-            patch(element, keyedNode[0], keyedNode[1], children[k], isSvg)
-            i++
-          } else if (keyedNode[0]) {
-            patch(
-              element,
-              element.insertBefore(keyedNode[0], oldElements[i]),
-              keyedNode[1],
-              children[k],
-              isSvg
-            )
-          } else {
-            patch(element, oldElements[i], null, children[k], isSvg)
-          }
-
-          newKeyed[newKey] = children[k]
-          k++
-        }
       }
 
-      while (i < oldChildren.length) {
-        if (getKey(oldChildren[i]) == null) {
-          removeElement(element, oldElements[i], oldChildren[i])
-        }
-        i++
-      }
-
-      for (let i in oldKeyed) {
-        if (!newKeyed[i]) {
-          removeElement(element, oldKeyed[i][0], oldKeyed[i][1])
-        }
-      }
+      return element;
     }
-    return element
+
   }
-}
