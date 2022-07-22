@@ -1,49 +1,33 @@
-export const // 
+const // 
 
-    updateAttribute = (element, name, value, isSvg) => {
+    updateAttribute = (element, attribute, value) => {
 
         const eventListener = (event) => event.currentTarget.events[event.type](event);
 
-        if (name === "key" || value === null)
+        if (attribute === "key" || value === null)
             return;
 
-        if (name.startsWith('on')) {
-
-            name = name.slice(2);
+        if (attribute.startsWith('on')) {
+            const event = attribute.slice(2);
             element.events ||= {};
-            element.events[name] = value;
+            element.events[event] = value;
             if (value)
-                element.addEventListener(name, eventListener);
+                element.addEventListener(event, eventListener);
             else
-                element.removeEventListener(name, eventListener);
-
-        } else if (
-            name in element &&
-            name !== "list" &&
-            name !== "type" &&
-            name !== "draggable" &&
-            name !== "spellcheck" &&
-            name !== "translate" &&
-            !isSvg
-        ) {
-            element[name] = value;
+                element.removeEventListener(event, eventListener);
+        } else if (attribute in element && !["list", "type", "draggable", "spellcheck", "translate"].includes(attribute)) {
+            element[attribute] = value;
         } else if (value !== false) {
-            element.setAttribute(name, value)
+            element.setAttribute(attribute, value)
         }
 
         if (value == null || value === false) {
-            element.removeAttribute(name)
+            element.removeAttribute(attribute)
         }
 
     },
 
-    resolveNode = (node, state, actions) => {
-        return typeof node === "function"
-            ? resolveNode(node(state, actions))
-            : node != null
-                ? node
-                : ""
-    },
+    resolveNode = (node, state, actions) => typeof node === "function" ? resolveNode(node(state, actions)) : node || "",
 
     wireStateToActions = (state, actions) => {
 
@@ -67,35 +51,44 @@ export const //
         return actions;
     },
 
-    createElement = (node, state, actions, lifecycle = []) => {
-        let // 
-            isSvg = false,
-            element;
+    createElement = (node, state, actions, oncreateEvents = []) => {
+
         if (typeof node === "string" || typeof node === "number")
-            element = document.createTextNode(node);
-        else if (node.nodeName === "svg") {
+            return [document.createTextNode('' + node), []];
+
+        let element;
+        if (node.nodeName === "svg")
             element = document.createElementNS("http://www.w3.org/2000/svg", 'svg');
-            isSvg = true;
-        } else {
+        else
             element = document.createElement(node.nodeName);
 
-            const { attributes, children } = node;
-            if (attributes) {
+        const { attributes, children } = node;
+        if (attributes) {
 
-                children.forEach(child => {
-                    const { element: newElement } = createElement(resolveNode(child, state, actions), state, actions, lifecycle);
-                    element.appendChild(newElement);
-                });
+            children.forEach(child => {
+                const [newElement] = createElement(resolveNode(child, state, actions), state, actions, oncreateEvents);
+                element.appendChild(newElement);
+            });
 
-                for (let name in attributes) {
-                    if (name === 'oncreate')
-                        lifecycle.push(() => attributes.oncreate(element))
-                    else
-                        updateAttribute(element, name, attributes[name], isSvg);
-                }
+            for (let attribute in attributes) {
+                if (attribute === 'oncreate')
+                    oncreateEvents.push(() => attributes.oncreate(element));
+                else
+                    updateAttribute(element, attribute, attributes[attribute]);
             }
+
         }
 
-        return { element, lifecycle };
+        return [element, oncreateEvents];
+    },
+
+    render = async (state, actions, node, container) => {
+        if (!container)
+            return [];
+        const [newElement, oncreateEvents] = createElement(node, state, actions);
+        container.insertBefore(newElement, null);
+        return oncreateEvents;
     };
+
+export { wireStateToActions, resolveNode, render };
 
