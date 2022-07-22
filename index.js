@@ -1,19 +1,106 @@
-import { wireStateToActions, resolveNode, render } from './utils';
-
 let random = Math.floor(Math.random() * 1e3);
 
-const style = document.createElement("style");
-style.rel = "stylesheet";
-style.innerText = '';
+const // 
+
+    updateAttribute = (element, attribute, value) => {
+
+        if (value === null)
+            return;
+
+        if (attribute.startsWith('on')) {
+            const // 
+                eventListener = event => event.currentTarget.events[event.type](event),
+                event = attribute.slice(2);
+            element.events ||= {};
+            element.events[event] = value;
+            if (value)
+                element.addEventListener(event, eventListener);
+            else
+                element.removeEventListener(event, eventListener);
+        } else if (attribute in element && !["list", "type", "draggable", "spellcheck", "translate"].includes(attribute))
+            element[attribute] = value;
+        else if (value !== false)
+            element.setAttribute(attribute, value);
+
+        if (value == null || value === false)
+            element.removeAttribute(attribute);
+
+    },
+
+    resolveNode = (node, state, actions) => typeof node === "function" ? resolveNode(node(state, actions)) : node || "",
+
+    wireStateToActions = (state, actions) => {
+
+        for (let action in actions) {
+            if (typeof actions[action] !== "function")
+                continue; // les actions ne peuvent être QUE des fonctions
+
+            const fn = actions[action];
+            actions[action] = data => {
+
+                let result = fn(data);
+
+                if (typeof result === "function")
+                    result = result(state, actions);
+
+                return result;
+            }
+
+        }
+
+        return actions;
+    },
+
+    createElement = (node, state, actions, oncreateEvents = []) => {
+
+        if (typeof node === "string" || typeof node === "number")
+            return [document.createTextNode('' + node), []];
+
+        let element;
+        if (node.nodeName === "svg")
+            element = document.createElementNS("http://www.w3.org/2000/svg", 'svg');
+        else
+            element = document.createElement(node.nodeName);
+
+        const { attributes, children } = node;
+        if (attributes) {
+
+            children.forEach(child => {
+                const [newElement] = createElement(resolveNode(child, state, actions), state, actions, oncreateEvents);
+                element.appendChild(newElement);
+            });
+
+            for (let attribute in attributes) {
+                if (attribute === 'oncreate')
+                    oncreateEvents.push(() => attributes.oncreate(element));
+                else
+                    updateAttribute(element, attribute, attributes[attribute]);
+            }
+
+        }
+
+        return [element, oncreateEvents];
+    },
+
+    render = async (state, actions, node, container) => {
+        if (!container)
+            return [];
+        const [newElement, oncreateEvents] = createElement(node, state, actions);
+        container.insertBefore(newElement, null);
+        return oncreateEvents;
+    },
+
+    [style] = createElement({ nodeName: "style", attributes: { rel: 'stylesheet' }, children: [] });
+
 document.head.appendChild(style);
 
 export default ({ stylesheet, ...collection }) => {
 
-    const //
-        getRegExp = cpnt => new RegExp(cpnt + '|[^\da-zA-Z#\.]' + cpnt + '{1}[^\da-zA-Z]', 'gm'),
+    const //        
         refs = {},
-        Collection = typeof collection === 'object' ? ($this) => collection : collection,
         output = {},
+        getRegExp = cpnt => new RegExp(cpnt + '|[^\da-zA-Z#\.]' + cpnt + '{1}[^\da-zA-Z]', 'gm'),
+        Collection = typeof collection === 'object' ? () => collection : collection,
         mergeClasses = cpnt => (attributes = {}, children = attributes.children) => {
             const // 
                 nodeName = Collection(output)[cpnt],
@@ -40,18 +127,18 @@ export default ({ stylesheet, ...collection }) => {
 
 export const //
 
-    h = (name, attributes, ...nodes) => {
+    h = (name, attributes, ...children) => {
 
-        const children = nodes.flat();
+        attributes ||= {};
+        children = children.flat();
 
         if (typeof name === "function")
-            return name(attributes || {}, children);
+            return name(attributes, children);
 
         return {
             nodeName: name,
-            attributes: attributes || {},
+            attributes: attributes,
             children,
-            key: attributes && attributes.key
         };
 
     },
