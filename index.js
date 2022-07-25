@@ -73,7 +73,17 @@ const //
             for (let attribute in attributes) {
                 if (attribute === 'oncreate')
                     oncreateEvents.push(() => attributes.oncreate(element));
-                else
+                else if (attribute === 'style'){
+                    const value = attributes[attribute];
+                    if (typeof value === "string") {
+                        element.style.cssText = value;
+                      } else {
+                        for (const i in value) {
+                          const style = value == null || value[i] == null ? "" : value[i]
+                          element.style[i] = style;
+                        }
+                      }
+                }else
                     updateAttribute(element, attribute, attributes[attribute]);
             }
 
@@ -128,6 +138,9 @@ export default ({ stylesheet, ...collection }) => {
 export const //
 
     h = (name, attributes, ...children) => {
+
+        if (!name)
+            console.log({ attributes, children });
 
         attributes ||= {};
         children = children.flat();
