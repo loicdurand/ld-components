@@ -73,17 +73,17 @@ const //
             for (let attribute in attributes) {
                 if (attribute === 'oncreate')
                     oncreateEvents.push(() => attributes.oncreate(element));
-                else if (attribute === 'style'){
+                else if (attribute === 'style') {
                     const value = attributes[attribute];
                     if (typeof value === "string") {
                         element.style.cssText = value;
-                      } else {
+                    } else {
                         for (const i in value) {
-                          const style = value == null || value[i] == null ? "" : value[i]
-                          element.style[i] = style;
+                            const style = value == null || value[i] == null ? "" : value[i]
+                            element.style[i] = style;
                         }
-                      }
-                }else
+                    }
+                } else
                     updateAttribute(element, attribute, attributes[attribute]);
             }
 
@@ -157,10 +157,11 @@ export const //
     },
 
     app = (state, actions, view, container) => {
-
-        actions = wireStateToActions(state, actions);
-        view = resolveNode(view, state, actions);
-        render(state, actions, view, container)
-            .then(createEvents => createEvents.forEach(event => event()));
+        requestAnimationFrame(() => {
+            actions = wireStateToActions(state, actions);
+            view = resolveNode(view, state, actions);
+            render(state, actions, view, container)
+                .then(createEvents => createEvents.forEach(event => event()));
+        });
 
     };
