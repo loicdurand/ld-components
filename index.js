@@ -139,9 +139,6 @@ export const //
 
     h = (name, attributes, ...children) => {
 
-        if (!name)
-            console.log({ attributes, children });
-
         attributes ||= {};
         children = children.flat();
 
