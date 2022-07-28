@@ -153,12 +153,14 @@ export const //
 
     },
 
-    app = (state, actions, view, container) => {
+    app = (state, actions, view, container) => new Promise((resolve, reject) => {
         requestAnimationFrame(() => {
             actions = wireStateToActions(state, actions);
             view = resolveNode(view, state, actions);
             render(state, actions, view, container)
-                .then(createEvents => createEvents.forEach(event => event()));
+                .then(createEvents => {
+                    createEvents.forEach(event => event());
+                    resolve(state);
+                });
         });
-
-    };
+    });
